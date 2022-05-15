@@ -1,0 +1,11 @@
+com/faridkamizi/config/PlayerConfig.java
+ com.faridkamizi.config.PlayerConfig
+com/faridkamizi/shops/Shop.java
+ com.faridkamizi.shops.Shop
+ com.faridkamizi.shops.Shop$BundledLocation
+com/faridkamizi/shops/ShopEvent.java
+ com.faridkamizi.shops.ShopEvent
+com/faridkamizi/inventory/ExampleGui.java
+ com.faridkamizi.inventory.ExampleGui
+com/faridkamizi/PlayerShops.java
+ com.faridkamizi.PlayerShops
