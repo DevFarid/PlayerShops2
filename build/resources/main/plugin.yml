@@ -15,7 +15,7 @@ commands:
     description: Your description
     usage: /<command>
     permission: useless
-  fastshop:
+  banknote:
     description: Your description
     usage: /<command>
     permission: useless

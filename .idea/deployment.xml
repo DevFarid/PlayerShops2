@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="PlayerShops git" uploadOnCheckin="d186686d-1f84-43ec-87b9-29123187fc3e" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="PlayerShops git">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myUploadOnCheckinName" value="PlayerShops git" />
+  </component>
+</project>
