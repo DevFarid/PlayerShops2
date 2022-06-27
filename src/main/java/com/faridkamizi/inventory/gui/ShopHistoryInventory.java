@@ -1,6 +1,7 @@
 package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.config.PlayerConfig;
+import com.faridkamizi.inventory.holders.ShopHistoryHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -10,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Set;
 import java.util.UUID;
 
-public class ShopHistoryInventory implements ShopHolder {
+public class ShopHistoryInventory implements ShopHistoryHolder {
 
     private UUID owner;
     private Inventory inventory;
@@ -45,6 +46,6 @@ public class ShopHistoryInventory implements ShopHolder {
 
     @Override
     public Inventory getInventory() {
-        return null;
+        return this.inventory;
     }
 }

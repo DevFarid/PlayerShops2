@@ -2,10 +2,6 @@ package com.faridkamizi.shops;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
-import com.faridkamizi.inventory.ClickAction;
-import com.faridkamizi.inventory.CustomHolder;
-import com.faridkamizi.inventory.Icon;
-import com.faridkamizi.inventory.gui.ShopInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -75,19 +71,6 @@ public class ShopCMDS implements CommandExecutor {
                     bankNote.setItemMeta(bankMeta);
                     player.getInventory().addItem(bankNote);
                 }
-            } else if(command.getName().equals("test")) {
-                CustomHolder customHolder = new CustomHolder("TEST", 9);
-                Icon icon = new Icon(new ItemStack(Material.BARRIER));
-                icon.addClickAction(new ClickAction() {
-                    @Override
-                    public void execute(Player player) {
-                        player.sendMessage("You clicked");
-                    }
-                });
-
-                customHolder.setIcon(0, icon);
-
-                player.openInventory(customHolder.getInventory());
             }
 //            else if(command.getName().equals("loadContents")) {
 //                PlayerConfig pConfig = PlayerConfig.getConfig(player);

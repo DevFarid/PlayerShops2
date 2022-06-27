@@ -1,43 +1,40 @@
 com/faridkamizi/util/Hologram.java
  com.faridkamizi.util.Hologram
-com/faridkamizi/currency/Currency.java
- com.faridkamizi.currency.Currency
-com/faridkamizi/events/PostInputProcess.java
- com.faridkamizi.events.PostInputProcess
-com/faridkamizi/inventory/gui/ShopHolder.java
- com.faridkamizi.inventory.gui.ShopHolder
+com/faridkamizi/events/PreInputProcess.java
+ com.faridkamizi.events.PreInputProcess
+ com.faridkamizi.events.PreInputProcess$BundledEvent
 com/faridkamizi/events/PlayerShopViewEvent.java
  com.faridkamizi.events.PlayerShopViewEvent
 com/faridkamizi/events/PrePlayerShopCreation.java
  com.faridkamizi.events.PrePlayerShopCreation
+com/faridkamizi/events/PostInputProcess.java
+ com.faridkamizi.events.PostInputProcess
+com/faridkamizi/inventory/holders/ShopInventoryHolder.java
+ com.faridkamizi.inventory.holders.ShopInventoryHolder
+com/faridkamizi/inventory/holders/ShopHistoryHolder.java
+ com.faridkamizi.inventory.holders.ShopHistoryHolder
+com/faridkamizi/currency/Currency.java
+ com.faridkamizi.currency.Currency
+com/faridkamizi/inventory/gui/ShopHistoryInventory.java
+ com.faridkamizi.inventory.gui.ShopHistoryInventory
 com/faridkamizi/config/PlayerConfig.java
  com.faridkamizi.config.PlayerConfig
-com/faridkamizi/events/PreInputProcess.java
- com.faridkamizi.events.PreInputProcess
- com.faridkamizi.events.PreInputProcess$BundledEvent
+com/faridkamizi/inventory/holders/ShopSFXHolder.java
+ com.faridkamizi.inventory.holders.ShopSFXHolder
+com/faridkamizi/shops/ShopCMDS.java
+ com.faridkamizi.shops.ShopCMDS
+com/faridkamizi/events/InputProcessCompletion.java
+ com.faridkamizi.events.InputProcessCompletion
+com/faridkamizi/PlayerShops.java
+ com.faridkamizi.PlayerShops
+com/faridkamizi/shops/ShopEvent.java
+ com.faridkamizi.shops.ShopEvent
+com/faridkamizi/inventory/guiListener/ShopListener.java
+ com.faridkamizi.inventory.guiListener.ShopListener
+com/faridkamizi/inventory/gui/ShopSFXInventory.java
+ com.faridkamizi.inventory.gui.ShopSFXInventory
 com/faridkamizi/shops/ShopObject.java
  com.faridkamizi.shops.ShopObject
  com.faridkamizi.shops.ShopObject$BundledLocation
-com/faridkamizi/events/InputProcessCompletion.java
- com.faridkamizi.events.InputProcessCompletion
-com/faridkamizi/inventory/CustomHolder.java
- com.faridkamizi.inventory.CustomHolder
-com/faridkamizi/inventory/gui/ChestSFXInventory.java
- com.faridkamizi.inventory.gui.ChestSFXInventory
-com/faridkamizi/inventory/gui/ShopHistoryInventory.java
- com.faridkamizi.inventory.gui.ShopHistoryInventory
-com/faridkamizi/inventory/Icon.java
- com.faridkamizi.inventory.Icon
 com/faridkamizi/inventory/gui/ShopInventory.java
  com.faridkamizi.inventory.gui.ShopInventory
-com/faridkamizi/inventory/ClickAction.java
- com.faridkamizi.inventory.ClickAction
-com/faridkamizi/shops/ShopEvent.java
- com.faridkamizi.shops.ShopEvent
-com/faridkamizi/shops/ShopCMDS.java
- com.faridkamizi.shops.ShopCMDS
- com.faridkamizi.shops.ShopCMDS$1
-com/faridkamizi/PlayerShops.java
- com.faridkamizi.PlayerShops
-com/faridkamizi/inventory/guiListener/ShopInventoryListener.java
- com.faridkamizi.inventory.guiListener.ShopInventoryListener

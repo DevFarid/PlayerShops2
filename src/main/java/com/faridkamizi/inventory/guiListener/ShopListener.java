@@ -2,7 +2,9 @@ package com.faridkamizi.inventory.guiListener;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.gui.ShopInventory;
-import com.faridkamizi.inventory.gui.ShopHolder;
+import com.faridkamizi.inventory.holders.ShopHistoryHolder;
+import com.faridkamizi.inventory.holders.ShopInventoryHolder;
+import com.faridkamizi.inventory.holders.ShopSFXHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -16,11 +18,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShopInventoryListener implements Listener {
+public class ShopListener implements Listener {
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
-        if(e.getInventory().getHolder() instanceof ShopHolder) {
+        if(e.getInventory().getHolder() instanceof ShopInventoryHolder) {
+            e.setCancelled(true);
+        } else if(e.getInventory().getHolder() instanceof ShopHistoryHolder) {
+            e.setCancelled(true);
+        } else if(e.getInventory().getHolder() instanceof ShopSFXHolder) {
             e.setCancelled(true);
         }
     }
@@ -32,9 +38,14 @@ public class ShopInventoryListener implements Listener {
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if(e.getInventory().getHolder() instanceof ShopHolder) {
-            Bukkit.broadcastMessage(e.getView().getTopInventory().getClass().getName());
+        if(e.getInventory().getHolder() instanceof ShopInventoryHolder) {
             ShopInventory gui = (ShopInventory) e.getInventory().getHolder();
+            gui.onClick(e);
+        } else if(e.getInventory().getHolder() instanceof ShopHistoryHolder) {
+            ShopHistoryHolder gui = (ShopHistoryHolder) e.getInventory().getHolder();
+            gui.onClick(e);
+        } else if(e.getInventory().getHolder() instanceof ShopSFXHolder) {
+            ShopSFXHolder gui = (ShopSFXHolder) e.getInventory().getHolder();
             gui.onClick(e);
         }
     }

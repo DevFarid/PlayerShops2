@@ -1,6 +1,7 @@
 package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
+import com.faridkamizi.inventory.holders.ShopSFXHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -11,12 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class ChestSFXInventory implements ShopHolder {
+public class ShopSFXInventory implements ShopSFXHolder {
 
     private UUID owner;
     private Inventory inventory;
 
-    public ChestSFXInventory(UUID shopOwner, String invName, Integer invSize) {
+    public ShopSFXInventory(UUID shopOwner, String invName, Integer invSize) {
         this.owner = shopOwner;
         this.inventory = Bukkit.createInventory(this, invSize, invName);
 
