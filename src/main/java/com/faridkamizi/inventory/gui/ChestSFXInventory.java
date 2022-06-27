@@ -1,25 +1,33 @@
 package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class ChestSFXInventory extends AbstractGUI {
+public class ChestSFXInventory implements ShopHolder {
+
+    private UUID owner;
+    private Inventory inventory;
 
     public ChestSFXInventory(UUID shopOwner, String invName, Integer invSize) {
-        super(shopOwner, invName, invSize);
-        this.initializeItems(shopOwner);
+        this.owner = shopOwner;
+        this.inventory = Bukkit.createInventory(this, invSize, invName);
+
+        this.setUp();
     }
 
-    private void initializeItems(UUID owner) {
+    private void setUp() {
         HashMap<Integer, ItemStack> particleList = this.getParticleItems();
 
         for (Map.Entry<Integer, ItemStack> entrySetItem: particleList.entrySet()) {
-            super.setItem(entrySetItem.getKey(), entrySetItem.getValue());
+            this.inventory.setItem(entrySetItem.getKey(), entrySetItem.getValue());
         }
     }
 
@@ -31,5 +39,15 @@ public class ChestSFXInventory extends AbstractGUI {
         particleItems.put(0, redstone);
 
         return particleItems;
+    }
+
+    @Override
+    public void onClick(InventoryClickEvent e) {
+        e.setCancelled(true);
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return this.inventory;
     }
 }
