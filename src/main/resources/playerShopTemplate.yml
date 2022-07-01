@@ -1,0 +1,10 @@
+profile:
+    # this username is the Mojang/Microsoft's last username, and it may change when player changes their username.
+    username:
+    UUID:
+    contents:
+        -
+        -
+        -
+        ...
+        -

@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Set;
 import java.util.UUID;
 
+
 public class ShopHistoryInventory implements ShopHistoryHolder {
 
     private UUID owner;

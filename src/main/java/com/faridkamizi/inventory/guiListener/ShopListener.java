@@ -5,7 +5,6 @@ import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.inventory.holders.ShopHistoryHolder;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.inventory.holders.ShopSFXHolder;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

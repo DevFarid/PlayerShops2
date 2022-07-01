@@ -1,0 +1,21 @@
+name: PlayerShops
+main: com.faridkamizi.PlayerShops
+version: 0.0.1
+api-version: 1.18
+commands:
+  saveContents:
+    description: Your description
+    usage: /<command>
+    permission: useless
+  loadContents:
+    description: Your description
+    usage: /<command>
+    permission: useless
+  test:
+    description: Your description
+    usage: /<command>
+    permission: useless
+  banknote:
+    description: Your description
+    usage: /<command>
+    permission: useless

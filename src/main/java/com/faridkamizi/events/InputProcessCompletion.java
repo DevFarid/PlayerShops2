@@ -13,6 +13,11 @@ import java.util.UUID;
 
 public class InputProcessCompletion implements Listener {
 
+    /**
+     * Handles input completion. When an input is completed, we need to know which event it was correlated with.
+     * @param e
+     *         the {@code PostInputProcess} event.
+     */
     @EventHandler
     public void InputProcessComplete(PostInputProcess e) {
         PreInputProcess.BundledEvent correlated = e.getBundledEvent();
@@ -45,6 +50,13 @@ public class InputProcessCompletion implements Listener {
         PreInputProcess.removePlayer(e.getPlayer());
     }
 
+    /**
+     * A utility function that checks whether a string message is a valid title, by scanning the characters within the string.
+     * @param message
+     *              the message to be inspected.
+     * @return
+     *          a boolean reflecting whether this string is valid or not.
+     */
     private boolean isValidTitle(String message) {
         boolean isBelowLimit = message.length() < 16;
         boolean isAlphaNumeric = true;
@@ -57,7 +69,13 @@ public class InputProcessCompletion implements Listener {
         return isBelowLimit && isAlphaNumeric;
     }
 
-
+    /**
+     * A utility function that checks whether a string message is a valid shop price.
+     * @param message
+     *               the string to inspect.
+     * @return
+     *          a boolean reflecting whether this string is all digit character only.
+     */
     private boolean isValidPrice(String message) {
         boolean isDigit = true;
 
@@ -70,6 +88,13 @@ public class InputProcessCompletion implements Listener {
                 }
             }
         }
-        return isDigit;
+
+        boolean isInRange = false;
+        if(isDigit) {
+            int digit = Integer.parseInt(message);
+            isInRange = digit > 0 && digit <= (Integer.MAX_VALUE - 1);
+        }
+
+        return (isDigit && isInRange);
     }
 }

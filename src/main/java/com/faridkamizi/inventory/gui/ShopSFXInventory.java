@@ -2,7 +2,10 @@ package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.holders.ShopSFXHolder;
+import com.faridkamizi.shops.ShopObject;
+import com.faridkamizi.util.AsyncParticles;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -36,7 +39,7 @@ public class ShopSFXInventory implements ShopSFXHolder {
     private HashMap<Integer, ItemStack> getParticleItems() {
         HashMap<Integer, ItemStack> particleItems = new HashMap<>();
 
-        ItemStack redstone = ShopInventory.createGuiItem(Material.REDSTONE, PlayerShops.colorize("&c&lSpiral Redstone"), PlayerShops.colorize("&fClick to decore your shop."));
+        ItemStack redstone = ShopInventory.createGuiItem(Material.BLAZE_POWDER, PlayerShops.colorize("&6&lSpiral Flame"), PlayerShops.colorize("&fClick to decore your shop."));
         particleItems.put(0, redstone);
 
         return particleItems;
@@ -45,6 +48,14 @@ public class ShopSFXInventory implements ShopSFXHolder {
     @Override
     public void onClick(InventoryClickEvent e) {
         e.setCancelled(true);
+        if(e.getRawSlot() == 0) {
+            Location particleLoc = ShopObject.getBundledLocation(this.owner).getLoc()[0].clone();
+            ShopObject.BundledLocation bundledLocation = ShopObject.getBundledLocation(this.owner);
+            particleLoc.add(1,1,0.5);
+
+            bundledLocation.particleLocation = particleLoc;
+            AsyncParticles.spawnParticle(particleLoc);
+        }
     }
 
     @Override

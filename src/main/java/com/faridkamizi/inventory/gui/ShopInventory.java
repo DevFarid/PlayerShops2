@@ -11,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -27,7 +26,7 @@ import java.util.*;
 public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
-    private Inventory inventory;
+    private final Inventory inventory;
 
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -70,7 +69,8 @@ public class ShopInventory implements ShopInventoryHolder {
                     e.setCancelled(true);
                     // Shop History Function.
                     if (e.getRawSlot() == e.getClickedInventory().getSize() - 9) {
-                        ShopHistoryInventory shopHistoryInventory = new ShopHistoryInventory(this.owner, PlayerShops.colorize("&8" + Bukkit.getPlayer(this.owner).getName() + "'s Shop History"), 9);
+                        OfflinePlayer shopOwner = Bukkit.getOfflinePlayer(this.owner);
+                        ShopHistoryInventory shopHistoryInventory = new ShopHistoryInventory(this.owner, PlayerShops.colorize("&8" + shopOwner.getName() + "'s Shop History"), 9);
                         player.closeInventory();
                         player.openInventory(shopHistoryInventory.getInventory());
                     }
@@ -95,14 +95,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (isOwner) {
 
                             // TO-DO: CLOSE this inventory for whoever that may have it open.
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                if (p.getOpenInventory().getTopInventory().getHolder() instanceof ShopInventoryHolder) {
-                                    ShopInventory gui = (ShopInventory) e.getInventory().getHolder();
-                                    if (gui.owner.equals(this.owner)) {
-                                        p.closeInventory();
-                                    }
-                                }
-                            }
+                            ShopObject.asyncUpdateInventory(this.owner, true, 0);
 
                             ShopObject.deleteShop(this.owner);
                             player.closeInventory();
@@ -129,19 +122,17 @@ public class ShopInventory implements ShopInventoryHolder {
                     else if (e.getRawSlot() < e.getClickedInventory().getSize() - 9) {
                         if (isOwner) {
                             if (!ShopObject.shopOpen(this.owner)) {
-                                process(this.owner, player.getUniqueId(), e.getClickedInventory(), e.getCurrentItem(), e.getRawSlot());
+                                process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
                             } else {
                                 e.getWhoClicked().closeInventory();
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
                             int itemPrice = ShopObject.itemPrice(e.getCurrentItem());
-                            int playerMoney = com.faridkamizi.currency.Currency.getTotalMoney(player);
-
-                            if (playerMoney >= itemPrice) {
-                                Currency.removeMoney(player, itemPrice);
+                            boolean removedMoneySuccessfully = Currency.removeMoney(player, itemPrice);
+                            if (removedMoneySuccessfully) {
                                 ItemStack forSave = e.getCurrentItem();
-                                process(this.owner, player.getUniqueId(), e.getClickedInventory(), e.getCurrentItem(), e.getRawSlot());
+                                process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
                                 player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
 
@@ -217,7 +208,7 @@ public class ShopInventory implements ShopInventoryHolder {
      * {@code UUID} player can be the {@code UUID} owner, themself, if so remove the item.
      * If not, then attempt to proceed to purchase the item for x price.
      */
-    public void process(UUID shopOwner, UUID forPlayer, final Inventory inv, ItemStack itemSlot, int slot) {
+    public void process(UUID shopOwner, UUID forPlayer, ItemStack itemSlot, int slot) {
         Player player = Bukkit.getPlayer(forPlayer);
         PlayerConfig pConfig = PlayerConfig.getConfig(shopOwner);
         if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
@@ -240,15 +231,7 @@ public class ShopInventory implements ShopInventoryHolder {
                     pConfig.set("player.contents." + key, null);
 
                     // TO-DO: CLOSE this inventory for whoever that may have it open.
-                    for (Player p: Bukkit.getOnlinePlayers()) {
-                        if(p.getOpenInventory().getTopInventory().getHolder() instanceof ShopInventoryHolder) {
-                            ShopInventory gui = (ShopInventory) p.getOpenInventory().getTopInventory().getHolder();
-                            if(gui.owner.equals(shopOwner)) {
-                                p.getOpenInventory().getTopInventory().setItem(slot, null);
-                                p.updateInventory();
-                            }
-                        }
-                    }
+                    ShopObject.asyncUpdateInventory(this.owner, false, slot);
 
                     break;
                 }
