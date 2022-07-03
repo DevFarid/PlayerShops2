@@ -129,8 +129,8 @@ public class ShopInventory implements ShopInventoryHolder {
                             }
                         } else {
                             int itemPrice = ShopObject.itemPrice(e.getCurrentItem());
-                            boolean removedMoneySuccessfully = Currency.removeMoney(player, itemPrice);
-                            if (removedMoneySuccessfully) {
+                            if (Currency.calculateBalance(player) >= itemPrice) {
+                                Currency.remove(player, itemPrice);
                                 ItemStack forSave = e.getCurrentItem();
                                 process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);

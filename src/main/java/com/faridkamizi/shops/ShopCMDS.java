@@ -2,6 +2,7 @@ package com.faridkamizi.shops;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
+import com.faridkamizi.currency.Currency;
 import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.util.AsyncParticles;
 import org.bukkit.*;
@@ -17,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class ShopCMDS implements CommandExecutor {
@@ -57,6 +59,8 @@ public class ShopCMDS implements CommandExecutor {
 
                     player.getInventory().addItem(bankNote);
                 }
+            } else if(command.getName().equals("test")) {
+                Currency.remove(player, 5000);
             }
             return true;
         }

@@ -12,97 +12,6 @@ import java.util.*;
 
 public class Currency
 {
-    /**
-     * Removes a certain X gems from player's inventory (if applicable)
-     * @param player
-     *              the player whose balance needs modification
-     * @param amountToRemove
-     *              the amount to remove from player's balance
-     */
-    public static boolean removeMoney(Player player, int amountToRemove) {
-        boolean operationSucess = false;
-        Map<ItemStack, Integer> totalBalance = getItemAndMoney(player);
-        int totalPlayerMoney = calculateTotalMoney(totalBalance);
-        if(totalPlayerMoney >= amountToRemove) {
-            modify(player, totalBalance, amountToRemove);
-            operationSucess = true;
-        }
-        return operationSucess;
-    }
-
-    /**
-     * Maps {@code ItemStack} items that are treated as banknotes to their appropriate value they're worth.
-     * @param player
-     *              the player whose inventory must be searched and mapped.
-     * @return
-     *          a Map that reflects each ItemStack to its own value.
-     */
-    public static Map<ItemStack, Integer> getItemAndMoney(Player player) {
-        HashMap<ItemStack, Integer> invMoneyMapping = new HashMap<>();
-        ItemStack[] playerContents = player.getInventory().getContents();
-        for(ItemStack itemStack : playerContents) {
-            if(itemStack != null && itemStack.getType().equals(Material.PAPER)) {
-                ItemMeta banknoteMeta = itemStack.getItemMeta();
-                if(banknoteMeta.getDisplayName().equals(PlayerShops.colorize("&aGem Note"))) {
-                    int value = retrieveValue(itemStack);
-                    invMoneyMapping.put(itemStack, value);
-                }
-            }
-        }
-        return invMoneyMapping;
-    }
-
-    /**
-     * Calculates the total money presented in a Mapping that maps the banknotes to their value.
-     * @param invToMoneyMap
-     *                  the Map that points each ItemStack to its value.
-     * @return
-     *          an integer reflecting the total value for all bank notes.
-     */
-    public static int calculateTotalMoney(Map<ItemStack, Integer> invToMoneyMap) {
-        int total = 0;
-        for(Map.Entry<ItemStack, Integer> invToMoneyMapEntry : invToMoneyMap.entrySet()) {
-            total += invToMoneyMapEntry.getValue();
-        }
-
-        return total;
-    }
-
-    /**
-     *
-     * @param player
-     * @param totalBalance
-     * @param amountToRemove
-     */
-    public static void modify(Player player, Map<ItemStack, Integer> totalBalance, int amountToRemove) {
-        Set<ItemStack> bulkToRemove = new HashSet<>();
-        int bulkBankNoteValue = 0;
-        int difference = 0;
-        for (Map.Entry<ItemStack, Integer> moneyEntry: totalBalance.entrySet()) {
-            if(moneyEntry.getValue() >= amountToRemove) {
-                difference = moneyEntry.getValue() - amountToRemove;
-                player.getInventory().remove(moneyEntry.getKey());
-                break;
-            } else if(bulkBankNoteValue >= amountToRemove) {
-                for (ItemStack i: bulkToRemove) {
-                    difference = bulkBankNoteValue - amountToRemove;
-                    player.getInventory().remove(i);
-                    totalBalance.remove(i);
-                }
-            } else {
-                bulkBankNoteValue += moneyEntry.getValue();
-                bulkToRemove.add(moneyEntry.getKey());
-            }
-        }
-        if(difference > 0) {
-            ItemStack bankNote = ShopInventory.createGuiItem(Material.PAPER, PlayerShops.colorize("&aGem Note"),
-                    PlayerShops.colorize("&f&lValue: &f" + difference + " Gems"),
-                    PlayerShops.colorize("&7Exchange at any bank for GEM(s)"));
-
-            player.getInventory().addItem(bankNote);
-        }
-    }
-
 
     /**
      * Given an {@code ItemStack}, this function will search the lore to see how much the bank note is worth.
@@ -120,6 +29,87 @@ public class Currency
         return amount;
     }
 
+    /**
+     * Maps a bank note to its value.
+     * @param player
+     *              the player who is in the interest of the search.
+     * @return
+     *          a Map reflecting the item as the key, and its worth as the value.
+     */
+    public static Map<ItemStack, Integer> mapBankNotesToValue(Player player) {
+
+        HashMap<ItemStack, Integer> totalValue = new HashMap<>();
+        int inventorySize = player.getInventory().getContents().length;
+        ItemStack[] allItems = player.getInventory().getContents();
 
 
+        for (int i = 0; i < inventorySize; i++) {
+            if(allItems[i] != null) {
+                ItemMeta itemStackMeta = allItems[i].getItemMeta();
+
+                if (itemStackMeta.getDisplayName().equals(PlayerShops.colorize("&aGem Note"))) {
+                    totalValue.put(allItems[i], retrieveValue(allItems[i]));
+                }
+            }
+        }
+
+        return totalValue;
+    }
+
+    /**
+     * Calculates the the balance of bank note(s) in player's inventory.
+     * @param player
+     *              the player who is to undergo a search for balance.
+     * @return
+     *          an int reflecting the player's total balance contained in their inventory.
+     */
+    public static int calculateBalance(Player player) {
+        Map<ItemStack, Integer> bankNoteWorth = mapBankNotesToValue(player);
+        int balance = 0;
+
+        for (Map.Entry<ItemStack, Integer> bankNoteEntry: bankNoteWorth.entrySet()) {
+            balance += bankNoteEntry.getValue();
+        }
+
+        return balance;
+    }
+
+    /**
+     *
+     * @param itemStack
+     *                  the {@code ItemStack} item that will be modified.
+     * @param newBalance
+     *                  the new balance for the update.
+     */
+    public static void modifyNote(ItemStack itemStack, int newBalance) {
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        List<String> itemLore = itemMeta.getLore();
+
+        itemLore.set(0, PlayerShops.colorize("&f&lValue: &f" + newBalance + " Gems"));
+        itemMeta.setLore(itemLore);
+        itemStack.setItemMeta(itemMeta);
+    }
+
+
+    public static void remove(Player player, int amountToRemove) {
+        Map<ItemStack, Integer> mappedBankNoteWorth = mapBankNotesToValue(player);
+        int totalBalance = calculateBalance(player);
+        int balanceDifference = totalBalance - amountToRemove;
+
+        if(balanceDifference > 0) {
+            for(Map.Entry<ItemStack, Integer> entry : mappedBankNoteWorth.entrySet()) {
+                player.getInventory().remove(entry.getKey());
+            }
+            ItemStack bankNote = ShopInventory.createGuiItem(Material.PAPER, PlayerShops.colorize("&aGem Note"),
+                    PlayerShops.colorize("&f&lValue: &f" + balanceDifference + " Gems"),
+                    PlayerShops.colorize("&7Exchange at any bank for GEM(s)"));
+            player.getInventory().addItem(bankNote);
+        } else if(balanceDifference == 0) {
+            for(Map.Entry<ItemStack, Integer> entry : mappedBankNoteWorth.entrySet()) {
+                player.getInventory().remove(entry.getKey());
+            }
+        } else {
+        }
+    }
 }

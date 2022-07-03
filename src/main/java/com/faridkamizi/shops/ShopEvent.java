@@ -2,9 +2,9 @@ package com.faridkamizi.shops;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.PlayerShopViewEvent;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.events.PrePlayerShopCreation;
-import com.faridkamizi.events.PlayerShopViewEvent;
 import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import org.bukkit.Bukkit;
@@ -46,10 +46,9 @@ public class ShopEvent implements Listener, Serializable {
                     } else {
                         int currentRows = ShopObject.getInventoryRows((e.getPlayer().getUniqueId()));
                         int upgradeCost = 200 * currentRows;
-                        boolean removedMoneySuccessfully = Currency.removeMoney(p, upgradeCost);
                         if(currentRows < 5) {
-                            if(removedMoneySuccessfully) {
-                                Currency.removeMoney(e.getPlayer(), upgradeCost);
+                            if(Currency.calculateBalance(p) >= upgradeCost) {
+                                Currency.remove(p, upgradeCost);
                                 ShopObject.upgradeShop(e.getPlayer().getUniqueId(), currentRows+1);
                             } else {
                                 p.sendMessage("You required " + upgradeCost + " gems to upgrade.");

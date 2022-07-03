@@ -35,6 +35,7 @@ public class PlayerShops extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new InputProcessCompletion(), this);
 
         this.getCommand("banknote").setExecutor(shopCMDS);
+        this.getCommand("test").setExecutor(shopCMDS);
     }
 
     @Override
