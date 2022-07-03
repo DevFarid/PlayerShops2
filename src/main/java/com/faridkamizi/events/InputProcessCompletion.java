@@ -1,7 +1,6 @@
 package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.shops.ShopObject;
 import com.faridkamizi.shops.enhanced.EnhancedShopObject;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -51,7 +50,7 @@ public class InputProcessCompletion implements Listener {
         else if(correlated.extraInformation != null && (correlated.correlatedEvent instanceof InventoryClickEvent)) {
             ItemStack itemStack = (ItemStack) correlated.extraInformation;
             if(isValidPrice(e.getInput())) {
-                ShopObject.addItemToShop(correlated.player, itemStack, Integer.parseInt(e.getInput()));
+                EnhancedShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()));
             } else {
                 e.getPlayer().getInventory().addItem(itemStack);
                 e.getPlayer().sendMessage(PlayerShops.colorize("&c&c'" + e.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));

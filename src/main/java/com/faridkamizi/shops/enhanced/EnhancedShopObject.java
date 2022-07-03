@@ -2,7 +2,6 @@ package com.faridkamizi.shops.enhanced;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.gui.ShopInventory;
-import com.faridkamizi.shops.ShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
@@ -17,18 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class EnhancedShopObject extends ShopLocation implements PlayerShopStorage {
+public class EnhancedShopObject extends ShopLocation implements UniversalShopStorage {
     private UUID shopOwner;
     private String shopName;
     private ShopConfig shopConfig;
     private ShopInventory shopInventory;
-
-    /**
-     * Empty constructor for {@code PlayerShops} main plugin.
-     */
-    public EnhancedShopObject() {
-
-    }
 
     /**
      * Constructor for when a shop is to be created.
@@ -44,10 +36,17 @@ public class EnhancedShopObject extends ShopLocation implements PlayerShopStorag
         this.shopOwner = player;
         this.shopName = name;
         this.shopConfig = new ShopConfig(player, this.shopName, super.getShopLocation());
-        int shopSize = ((1 + ShopObject.getInventoryRows(this.shopOwner)) * 9);
+        int shopSize = ((1 + shopConfig.getShopTier()) * 9);
 
         this.shopInventory = new ShopInventory(this.shopOwner, shopSize, this);
         this.createPhysicalProperties();
+    }
+
+    /**
+     * Empty constructor for {@code PlayerShops} main plugin.
+     */
+    public EnhancedShopObject() {
+
     }
 
     /**

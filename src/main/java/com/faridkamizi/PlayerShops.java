@@ -6,13 +6,11 @@ import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.shops.ShopCMDS;
 import com.faridkamizi.shops.ShopEvent;
-import com.faridkamizi.shops.ShopObject;
 import com.faridkamizi.shops.enhanced.EnhancedShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.A;
 
 
 public class PlayerShops extends JavaPlugin {
@@ -43,7 +41,6 @@ public class PlayerShops extends JavaPlugin {
     @Override
     public void onDisable() {
         super.onDisable();
-        ShopObject.closeAllShop();
         PlayerConfig.removeConfigs();
         Hologram.removeAll();
         AsyncParticles.stopAllTasks();

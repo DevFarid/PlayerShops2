@@ -1,8 +1,12 @@
 package com.faridkamizi.shops.enhanced;
 
+import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 import java.util.UUID;
@@ -77,6 +81,10 @@ public class ShopConfig {
         pConfig.save();
     }
 
+    public void upgrade() {
+        pConfig.set("player.shopTier", (getShopTier() + 1));
+    }
+
     public boolean getStatus() {
         return pConfig.getBoolean("player.shopOpen");
     }
@@ -102,5 +110,19 @@ public class ShopConfig {
         String shopStatus = getStatus() ? "&a" : "&c";
         Hologram.rename((shopStatus + pConfig.get("player.shopName")), shopLocation.get(2));
         Hologram.rename(("&f"+ getViews() + shopStatus + " view(s)"), shopLocation.get(3));
+    }
+
+    public void addItem(ItemStack itemStack, int price) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        List<String> itemLore = itemMeta.getLore();
+
+        itemLore.add(PlayerShops.colorize("&aPrice: &f" + price + "g &aeach"));
+        itemMeta.setLore(itemLore);
+
+        itemStack.setItemMeta(itemMeta);
+
+        UUID itemID = UUID.randomUUID();
+        pConfig.set("player.contents." + itemID, itemStack);
+        itemStack.setType(Material.AIR);
     }
 }

@@ -40,17 +40,18 @@ public class ShopEvent implements Listener, Serializable {
                 Bukkit.getServer().getPluginManager().callEvent(shopCreationEvent);
 
             } else if(e.getClickedBlock().getType().equals(Material.CHEST)) {
-                e.setCancelled(true);
-                if(ShopObject.getOwner(e.getClickedBlock().getLocation()).equals(e.getPlayer().getUniqueId())) {
-                    if(ShopObject.shopOpen(e.getPlayer().getUniqueId())) {
+                EnhancedShopObject shopObject = EnhancedShopObject.getShop(e.getClickedBlock().getLocation());
+                if(shopObject != null && shopObject.getShopOwnerID().equals(p.getUniqueId())) {
+                    e.setCancelled(true);
+                    if(shopObject.getShopConfig().getStatus()) {
                         p.sendMessage(PlayerShops.colorize("&cYou must close your shop to upgrade it."));
                     } else {
-                        int currentRows = ShopObject.getInventoryRows((e.getPlayer().getUniqueId()));
+                        int currentRows = shopObject.getShopConfig().getShopTier();
                         int upgradeCost = 200 * currentRows;
                         if(currentRows < 5) {
                             if(Currency.calculateBalance(p) >= upgradeCost) {
                                 Currency.remove(p, upgradeCost);
-                                ShopObject.upgradeShop(e.getPlayer().getUniqueId(), currentRows+1);
+                                shopObject.getShopConfig().upgrade();
                             } else {
                                 p.sendMessage("You required " + upgradeCost + " gems to upgrade.");
                             }
