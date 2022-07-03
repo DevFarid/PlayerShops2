@@ -12,7 +12,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class PlayerConfig extends YamlConfiguration {
-    private static final Cache<UUID, PlayerConfig> configs = CacheBuilder.newBuilder().maximumSize(1000).expireAfterWrite(15, TimeUnit.SECONDS).build();
+//    private static final Cache<UUID, PlayerConfig> configs = CacheBuilder.newBuilder().maximumSize(1000).expireAfterWrite(15, TimeUnit.SECONDS).build();
+    private static final Map<UUID, PlayerConfig> configs = new HashMap<>();
 
 
     public static PlayerConfig getConfig(Player player) {
@@ -29,8 +30,8 @@ public class PlayerConfig extends YamlConfiguration {
 
     public static PlayerConfig getConfig(UUID uuid) {
         synchronized (configs) {
-            if(configs.asMap().containsKey(uuid)) {
-                return configs.asMap().get(uuid);
+            if(configs.containsKey(uuid)) {
+                return configs.get(uuid);
             }
             PlayerConfig config = new PlayerConfig(uuid);
             configs.put(uuid, config);
@@ -39,7 +40,7 @@ public class PlayerConfig extends YamlConfiguration {
     }
 
     public static void removeConfigs() {
-        configs.invalidateAll();
+        configs.clear();
     }
     private File file = null;
     private final Object saveLock = new Object();
@@ -84,7 +85,7 @@ public class PlayerConfig extends YamlConfiguration {
             save();
         }
         synchronized (configs) {
-            configs.invalidate(uuid);
+            configs.remove(uuid);
         }
     }
 }

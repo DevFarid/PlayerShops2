@@ -7,6 +7,7 @@ import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.shops.ShopCMDS;
 import com.faridkamizi.shops.ShopEvent;
 import com.faridkamizi.shops.ShopObject;
+import com.faridkamizi.shops.enhanced.EnhancedShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.ChatColor;
@@ -17,6 +18,7 @@ import org.checkerframework.checker.units.qual.A;
 public class PlayerShops extends JavaPlugin {
     private final ShopCMDS shopCMDS = new ShopCMDS(this);
     private final AsyncParticles particles = new AsyncParticles(this);
+    private final EnhancedShopObject shopObjects = new EnhancedShopObject();
 
     public static String colorize(String message)
     {
@@ -45,6 +47,7 @@ public class PlayerShops extends JavaPlugin {
         PlayerConfig.removeConfigs();
         Hologram.removeAll();
         AsyncParticles.stopAllTasks();
+        shopObjects.closeAllShops();
         this.getServer().getConsoleSender().sendMessage(ChatColor.RED + "PlayerShops disabled");
     }
 

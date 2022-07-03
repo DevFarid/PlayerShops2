@@ -1,5 +1,6 @@
 package com.faridkamizi.util;
 
+import com.faridkamizi.PlayerShops;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -28,6 +29,17 @@ public class Hologram implements Listener
         as.setVisible(false); //Makes the ArmorStand invisible
 
         armorStandDirectory.put(as.getUniqueId(), location);
+    }
+
+    public static void rename(String newName, Location forLocation) {
+        if(armorStandDirectory.containsValue(forLocation)) {
+            for(Map.Entry<UUID, Location> asEntry : armorStandDirectory.entrySet()) {
+                if(asEntry.getValue().equals(forLocation)) {
+                    Bukkit.getEntity(asEntry.getKey()).setCustomName(PlayerShops.colorize(newName));
+                    break;
+                }
+            }
+        }
     }
 
     public static void deleteHolo(Location location) {

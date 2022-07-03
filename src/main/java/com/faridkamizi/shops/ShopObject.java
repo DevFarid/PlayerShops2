@@ -123,9 +123,9 @@ public class ShopObject {
 
                 Chest chestBlockState1 = (Chest) block1.getBlockData();
                 chestBlockState1.setType(Chest.Type.LEFT);
-                block.setBlockData(chestBlockState1, true);
+                block1.setBlockData(chestBlockState1, true);
 
-                Chest chestBlockState2 = (Chest) block.getBlockData();
+                Chest chestBlockState2 = (Chest) block2.getBlockData();
                 chestBlockState2.setType(Chest.Type.RIGHT);
                 block2.setBlockData(chestBlockState2, true);
 

@@ -51,7 +51,9 @@ public class AsyncParticles {
 
     public static void stopTask(Location particleLocation) {
         BukkitTask task = currentTasks.get(particleLocation);
-        task.cancel();
+        if(task != null) {
+            task.cancel();
+        }
         currentTasks.remove(particleLocation);
     }
 

@@ -7,6 +7,7 @@ import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.events.PrePlayerShopCreation;
 import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.inventory.guiListener.ShopListener;
+import com.faridkamizi.shops.enhanced.EnhancedShopObject;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -60,11 +61,15 @@ public class ShopEvent implements Listener, Serializable {
                 }
             }
         } else if(e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.CHEST) {
-            if(ShopObject.contains(e.getClickedBlock().getLocation())) {
+            EnhancedShopObject shopObject = EnhancedShopObject.getShop(e.getClickedBlock().getLocation());
+            if(shopObject != null) {
                 e.setCancelled(true);
-
-                PlayerShopViewEvent shopViewEvent = new PlayerShopViewEvent(p, e.getClickedBlock().getLocation());
-                Bukkit.getServer().getPluginManager().callEvent(shopViewEvent);
+                if(shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen") || shopObject.getShopOwnerID().equals(p.getUniqueId())) {
+                    p.openInventory(shopObject.getShopInventory().getInventory());
+                    p.playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_OPEN, 2.0F, 1.0F);
+                } else {
+                    p.sendMessage(PlayerShops.colorize("&cThat shop is not open."));
+                }
             }
         }
     }
@@ -91,19 +96,5 @@ public class ShopEvent implements Listener, Serializable {
     @EventHandler
     public void shopViewEvent(PlayerShopViewEvent e) {
         Player p = e.getPlayer();
-        UUID shopOwnerUUID = ShopObject.getOwner(e.getLocation());
-
-        if(ShopObject.shopOpen(shopOwnerUUID) || p.getUniqueId().equals(shopOwnerUUID) || p.isOp()) {
-            String name = Bukkit.getOfflinePlayer(shopOwnerUUID).getName()+ "'s Shop";
-            int size = ((1 + ShopObject.getInventoryRows(shopOwnerUUID)) * 9);
-
-            ShopInventory gui = new ShopInventory(shopOwnerUUID, name, size);
-            ShopObject.addView(shopOwnerUUID, e.getPlayer().getUniqueId());
-
-            p.openInventory(gui.getInventory());
-            p.playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_OPEN, 2.0F, 1.0F);
-        } else {
-            p.sendMessage(PlayerShops.colorize("&cThat shop is not open."));
-        }
     }
 }

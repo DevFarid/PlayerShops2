@@ -5,12 +5,10 @@ import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
-import com.faridkamizi.shops.ShopObject;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
+import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -27,15 +25,17 @@ public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
     private final Inventory inventory;
-
+    private final EnhancedShopObject shopObject;
     /*
     --------------------------------------------------------------------------------------------------------------------
     Constructor
     --------------------------------------------------------------------------------------------------------------------
      */
-    public ShopInventory(UUID shopOwner, String inventoryName, int inventorySize) {
+    public ShopInventory(UUID shopOwner, int inventorySize, EnhancedShopObject shopObjectHolder) {
+        String name = Bukkit.getOfflinePlayer(shopOwner).getName()+ "'s Shop";
         this.owner = shopOwner;
-        this.inventory = Bukkit.createInventory(this, inventorySize, inventoryName);
+        this.inventory = Bukkit.createInventory(this, inventorySize, name);
+        this.shopObject = shopObjectHolder;
         this.setUp();
     }
 
@@ -53,7 +53,7 @@ public class ShopInventory implements ShopInventoryHolder {
             if (e.getClickedInventory() != null) {
                 if ((e.getClickedInventory().getType() == InventoryType.CHEST) && e.getCurrentItem() == null && e.getCursor() != null) {
                     if (isOwner) {
-                        if (!ShopObject.shopOpen(this.owner)) {
+                        if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
                             player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + e.getCursor().getAmount() + "x&a] of this item."));
                             PreInputProcess.requestPlayer(player, e);
                             e.getWhoClicked().setItemOnCursor(null);
@@ -95,9 +95,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (isOwner) {
 
                             // TO-DO: CLOSE this inventory for whoever that may have it open.
-                            ShopObject.asyncUpdateInventory(this.owner, true, 0);
-
-                            ShopObject.deleteShop(this.owner);
+                            shopObject.deleteShop(this.owner);
                             player.closeInventory();
                             player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2.0F, 1.0F);
                         }
@@ -105,10 +103,10 @@ public class ShopInventory implements ShopInventoryHolder {
                     // Open/Close function.
                     else if (e.getRawSlot() == e.getClickedInventory().getSize() - 1) {
                         if (isOwner) {
-                            ShopObject.switchShopStatus(this.owner, player.getUniqueId());
+                            shopObject.getShopConfig().toggleShopStatus();
                             ItemStack openStatus = createGuiItem(Material.LIME_DYE, "&cClick to &lCLOSE &cShop", PlayerShops.colorize("&fClick to &cclose&f shop."));
                             ItemStack closedStatus = createGuiItem(Material.GRAY_DYE, "&aClick to &lOPEN &aShop", PlayerShops.colorize("&fClick to &2open&f shop."));
-                            if (ShopObject.shopOpen(this.owner)) {
+                            if (shopObject.getShopConfig().getStatus()) {
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
                                 e.getClickedInventory().setItem(e.getRawSlot(), openStatus);
                             } else {
@@ -121,14 +119,14 @@ public class ShopInventory implements ShopInventoryHolder {
                     // Otherwise, the owner is trying to add an item.
                     else if (e.getRawSlot() < e.getClickedInventory().getSize() - 9) {
                         if (isOwner) {
-                            if (!ShopObject.shopOpen(this.owner)) {
+                            if (!shopObject.getShopConfig().getStatus()) {
                                 process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
                             } else {
                                 e.getWhoClicked().closeInventory();
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
-                            int itemPrice = ShopObject.itemPrice(e.getCurrentItem());
+                            int itemPrice = itemPrice(e.getCurrentItem());
                             if (Currency.calculateBalance(player) >= itemPrice) {
                                 Currency.remove(player, itemPrice);
                                 ItemStack forSave = e.getCurrentItem();
@@ -162,7 +160,7 @@ public class ShopInventory implements ShopInventoryHolder {
 
     /*
     --------------------------------------------------------------------------------------------------------------------
-    Member functions
+    Member Functions
     --------------------------------------------------------------------------------------------------------------------
      */
 
@@ -170,10 +168,10 @@ public class ShopInventory implements ShopInventoryHolder {
      * Set up the shop items.
      */
     private void setUp() {
-        int rowsLvlSize = 1 + ShopObject.getInventoryRows(owner);
+        int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
         this.inventory.clear();
 
-        HashMap<Integer, ItemStack> bottomRow = getShopMenuItems(owner);
+        HashMap<Integer, ItemStack> bottomRow = getShopMenuItems(owner, rowsLvlSize);
         List<ItemStack> ownerShopItems = getOwnerContents(owner);
 
         int currentRow = 0;
@@ -222,7 +220,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         pConfig.set("player.shopHistory."+key, historyStack);
                     }
 
-                    ShopObject.deletePriceTag(itemStack);
+                    deletePriceTag(itemStack);
 
                     this.inventory.setItem(slot, null);
 
@@ -231,7 +229,7 @@ public class ShopInventory implements ShopInventoryHolder {
                     pConfig.set("player.contents." + key, null);
 
                     // TO-DO: CLOSE this inventory for whoever that may have it open.
-                    ShopObject.asyncUpdateInventory(this.owner, false, slot);
+                    this.shopObject.getShopInventory().getInventory().setItem(slot, null);
 
                     break;
                 }
@@ -243,6 +241,12 @@ public class ShopInventory implements ShopInventoryHolder {
             player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
         }
     }
+
+    /*
+    --------------------------------------------------------------------------------------------------------------------
+    Static Functions
+    --------------------------------------------------------------------------------------------------------------------
+     */
 
     /**
      * Retrieves the owner content-item of a shop.
@@ -273,11 +277,10 @@ public class ShopInventory implements ShopInventoryHolder {
      * @return
      *          the string of ItemStack that will be returned for GUI placement and information.
      */
-    public static HashMap<Integer, ItemStack> getShopMenuItems(UUID owner) {
+    public static HashMap<Integer, ItemStack> getShopMenuItems(UUID owner, int shopTier) {
         HashMap<Integer, ItemStack> shopMenuItems = new HashMap<>();
         PlayerConfig pConfig = PlayerConfig.getConfig(owner);
         boolean shopStatus = pConfig.getBoolean("player.shopOpen");
-        int shopTier = 1 + ShopObject.getInventoryRows(owner);
         int slotIndex = shopTier * 9;
         shopMenuItems.put(slotIndex-6, createGuiItem(Material.BLACK_STAINED_GLASS_PANE, " ", ""));
 
@@ -351,6 +354,39 @@ public class ShopInventory implements ShopInventoryHolder {
         item.setItemMeta(meta);
 
         return item;
+    }
+
+    /**
+     * Given a shop item, this function will report the price of a given item in a shop.
+     * @param itemStack
+     *                  the clicked item being passed.
+     * @return
+     *          the integer that represents the price.
+     */
+    public static int itemPrice(ItemStack itemStack) {
+        int price = 0;
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        List<String> lore = itemMeta.getLore();
+        String[] splitLore = lore.get(lore.size()-1).split(" ");
+
+        splitLore[1] = splitLore[1].replaceAll("g", "");
+
+        price = Integer.parseInt(ChatColor.stripColor(splitLore[1]));
+
+        return price;
+    }
+
+    /**
+     * Will remove a shop price tag from an {@code ItemStack} in a shop.
+     * @param itemStack
+     *                  the itemstack in the interest of having their price tag removed.
+     */
+    public static void deletePriceTag(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        List<String> lore = itemMeta.getLore();
+        lore.set(lore.size()-1, "");
+        itemMeta.setLore(lore);
+        itemStack.setItemMeta(itemMeta);
     }
 
 }
