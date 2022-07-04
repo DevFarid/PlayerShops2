@@ -12,11 +12,12 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class EnhancedShopObject extends ShopLocation implements UniversalShopStorage {
+public class ShopObject extends ShopLocation implements UniversalShopStorage {
     private UUID shopOwner;
     private String shopName;
     private ShopConfig shopConfig;
@@ -31,7 +32,7 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
      * @param locations
      *              the location(s) associated with shop such as chest locations, hologram locations, and particle location.
      */
-    public EnhancedShopObject(UUID player, String name, Location... locations) {
+    public ShopObject(UUID player, String name, Location... locations) {
         super(locations);
         this.shopOwner = player;
         this.shopName = name;
@@ -45,7 +46,7 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
     /**
      * Empty constructor for {@code PlayerShops} main plugin.
      */
-    public EnhancedShopObject() {
+    public ShopObject() {
 
     }
 
@@ -87,7 +88,7 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
      */
     public void deleteShop(UUID uuid) {
         if(shopLocationDirectory.containsKey(uuid)) {
-            EnhancedShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
+            ShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
             ShopConfig shopCfg = shopOfPlayer.shopConfig;
             List<Location> shopLocation = shopOfPlayer.getShopLocation();
 
@@ -117,33 +118,34 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
     }
 
     /**
-     * Get the {@code ShopConfig} config associated with this {@code EnhancedShopObject} shop.
+     * Get the {@code ShopConfig} config associated with this {@code ShopObject} shop.
      * @return
-     *         the {@code ShopConfig} object associated with this {@code EnhancedShopObject}
+     *         the {@code ShopConfig} object associated with this {@code ShopObject}
      */
-    public ShopConfig getShopConfig() {
+    public ShopConfig getShopConfig() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        this.shopConfig = shopConfig.refresh();
         return this.shopConfig;
     }
 
     /**
-     * Get the {@code ShopInventory} associated with this {@code EnhancedShopObject} shop.
+     * Get the {@code ShopInventory} associated with this {@code ShopObject} shop.
      * @return
-     *         the {@code ShopInventory} object associated with this {@code EnhancedShopObject}
+     *         the {@code ShopInventory} object associated with this {@code ShopObject}
      */
     public ShopInventory getShopInventory() {
         return this.shopInventory;
     }
 
     /**
-     * Given a location, find the {@code EnhancedShopObject} shop associated with the clicked location.
+     * Given a location, find the {@code ShopObject} shop associated with the clicked location.
      * @param clickedBlock
      *                  the clicked block incoming as a location.
      * @return
-     *          the {@code EnhancedShopObject} associated to the clicked block
+     *          the {@code ShopObject} associated to the clicked block
      */
-    public static EnhancedShopObject getShop(Location clickedBlock) {
-        EnhancedShopObject shopObject = null;
-        for(Map.Entry<UUID, EnhancedShopObject> entry : shopLocationDirectory.entrySet()) {
+    public static ShopObject getShop(Location clickedBlock) {
+        ShopObject shopObject = null;
+        for(Map.Entry<UUID, ShopObject> entry : shopLocationDirectory.entrySet()) {
             if(clickedBlock.equals(entry.getValue().getShopLocation().get(0)) || clickedBlock.equals(entry.getValue().getShopLocation().get(1))) {
                 shopObject = entry.getValue();
                 break;
@@ -156,7 +158,7 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
      * Will remove all shops found in {@code PlayerShopStorage} static storage.
      */
     public void closeAllShops() {
-        for(Map.Entry<UUID, EnhancedShopObject> playerShopEntry : shopLocationDirectory.entrySet()) {
+        for(Map.Entry<UUID, ShopObject> playerShopEntry : shopLocationDirectory.entrySet()) {
             deleteShop(playerShopEntry.getKey());
         }
         Hologram.removeAll();
@@ -171,7 +173,7 @@ public class EnhancedShopObject extends ShopLocation implements UniversalShopSto
      *                  The shop object that was just created, a.k.a {@code this}.
      */
     @Override
-    public void add(UUID uuid, EnhancedShopObject shopObject) {
+    public void add(UUID uuid, ShopObject shopObject) {
         if(!shopLocationDirectory.containsKey(uuid)) {
             shopLocationDirectory.put(uuid, shopObject);
         }

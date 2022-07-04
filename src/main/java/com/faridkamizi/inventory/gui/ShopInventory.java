@@ -5,10 +5,9 @@ import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
-import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import com.faridkamizi.shops.enhanced.ShopObject;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,13 +24,13 @@ public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
     private final Inventory inventory;
-    private final EnhancedShopObject shopObject;
+    private final ShopObject shopObject;
     /*
     --------------------------------------------------------------------------------------------------------------------
     Constructor
     --------------------------------------------------------------------------------------------------------------------
      */
-    public ShopInventory(UUID shopOwner, int inventorySize, EnhancedShopObject shopObjectHolder) {
+    public ShopInventory(UUID shopOwner, int inventorySize, ShopObject shopObjectHolder) {
         String name = Bukkit.getOfflinePlayer(shopOwner).getName()+ "'s Shop";
         this.owner = shopOwner;
         this.inventory = Bukkit.createInventory(this, inventorySize, name);

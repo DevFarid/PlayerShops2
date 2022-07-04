@@ -1,7 +1,7 @@
 package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import com.faridkamizi.shops.enhanced.ShopObject;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -41,7 +41,7 @@ public class InputProcessCompletion implements Listener {
             UUID shopOwner = ((PrePlayerShopCreation) correlated.correlatedEvent).getPlayer().getUniqueId();
             if(isValidTitle(e.getInput())) {
                 //ShopObject.add(shopLocation, shopOwner, e.getInput());
-                EnhancedShopObject shopObject = new EnhancedShopObject(shopOwner, e.getInput(), locs);
+                ShopObject shopObject = new ShopObject(shopOwner, e.getInput(), locs);
             } else {
                 e.getPlayer().sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
             }
@@ -50,14 +50,14 @@ public class InputProcessCompletion implements Listener {
         else if(correlated.extraInformation != null && (correlated.correlatedEvent instanceof InventoryClickEvent)) {
             ItemStack itemStack = (ItemStack) correlated.extraInformation;
             if(isValidPrice(e.getInput())) {
-                EnhancedShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()));
+                ShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()));
             } else {
                 e.getPlayer().getInventory().addItem(itemStack);
                 e.getPlayer().sendMessage(PlayerShops.colorize("&c&c'" + e.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
             }
         } else if(correlated.extraInformation == null && (correlated.correlatedEvent instanceof InventoryClickEvent)) {
             if(isValidTitle(e.getInput())) {
-                EnhancedShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().updateName(e.getInput());
+                ShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().updateName(e.getInput());
                 e.getPlayer().sendMessage(PlayerShops.colorize("&eUpdated shop name."));
             }
         }

@@ -2,10 +2,9 @@ package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.holders.ShopSFXHolder;
-import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import com.faridkamizi.shops.enhanced.ShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -49,7 +48,7 @@ public class ShopSFXInventory implements ShopSFXHolder {
     public void onClick(InventoryClickEvent e) {
         e.setCancelled(true);
         if(e.getRawSlot() == 0) {
-            AsyncParticles.spawnParticle(EnhancedShopObject.shopLocationDirectory.get(owner).getShopLocation().get(4));
+            AsyncParticles.spawnParticle(ShopObject.shopLocationDirectory.get(owner).getShopLocation().get(4));
         }
     }
 

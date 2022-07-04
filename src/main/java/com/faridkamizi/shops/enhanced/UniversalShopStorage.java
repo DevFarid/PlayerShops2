@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface UniversalShopStorage {
-    final static Map<UUID, EnhancedShopObject> shopLocationDirectory = new HashMap<>();
+    final static Map<UUID, ShopObject> shopLocationDirectory = new HashMap<>();
 
-    void add(UUID uuid, EnhancedShopObject shopObject);
+    void add(UUID uuid, ShopObject shopObject);
 
 }

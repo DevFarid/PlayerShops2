@@ -6,7 +6,7 @@ import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.shops.ShopCMDS;
 import com.faridkamizi.shops.ShopEvent;
-import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import com.faridkamizi.shops.enhanced.ShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.ChatColor;
@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PlayerShops extends JavaPlugin {
     private final ShopCMDS shopCMDS = new ShopCMDS(this);
     private final AsyncParticles particles = new AsyncParticles(this);
-    private final EnhancedShopObject shopObjects = new EnhancedShopObject();
+    private final ShopObject shopObjects = new ShopObject();
 
     public static String colorize(String message)
     {

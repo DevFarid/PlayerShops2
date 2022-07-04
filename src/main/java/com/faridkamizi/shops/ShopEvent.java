@@ -2,12 +2,12 @@ package com.faridkamizi.shops;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.PlayerShopUpgrade;
 import com.faridkamizi.events.PlayerShopViewEvent;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.events.PrePlayerShopCreation;
-import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.inventory.guiListener.ShopListener;
-import com.faridkamizi.shops.enhanced.EnhancedShopObject;
+import com.faridkamizi.shops.enhanced.ShopObject;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 public class ShopEvent implements Listener, Serializable {
 
@@ -30,47 +29,36 @@ public class ShopEvent implements Listener, Serializable {
      */
     @EventHandler
     public static void onPlayerInteract(PlayerInteractEvent e) {
-        Player p = e.getPlayer();
-        if(p.isSneaking() && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        Player player = e.getPlayer();
+        if(player.isSneaking() && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
             ItemStack pJournal = ShopListener.getBook();
-            if(p.getInventory().getItemInMainHand().equals(pJournal)) {
+            if(player.getInventory().getItemInMainHand().equals(pJournal)) {
                 e.setCancelled(true);
 
-                PrePlayerShopCreation shopCreationEvent = new PrePlayerShopCreation(p, e.getClickedBlock().getLocation());
+                PrePlayerShopCreation shopCreationEvent = new PrePlayerShopCreation(player, e.getClickedBlock().getLocation());
                 Bukkit.getServer().getPluginManager().callEvent(shopCreationEvent);
 
             } else if(e.getClickedBlock().getType().equals(Material.CHEST)) {
-                EnhancedShopObject shopObject = EnhancedShopObject.getShop(e.getClickedBlock().getLocation());
-                if(shopObject != null && shopObject.getShopOwnerID().equals(p.getUniqueId())) {
+                ShopObject shopObject = ShopObject.getShop(e.getClickedBlock().getLocation());
+                if(shopObject != null && shopObject.getShopOwnerID().equals(player.getUniqueId())) {
                     e.setCancelled(true);
+
                     if(shopObject.getShopConfig().getStatus()) {
-                        p.sendMessage(PlayerShops.colorize("&cYou must close your shop to upgrade it."));
+                        player.sendMessage(PlayerShops.colorize("&cYou must close your shop to upgrade it."));
                     } else {
-                        int currentRows = shopObject.getShopConfig().getShopTier();
-                        int upgradeCost = 200 * currentRows;
-                        if(currentRows < 5) {
-                            if(Currency.calculateBalance(p) >= upgradeCost) {
-                                Currency.remove(p, upgradeCost);
-                                shopObject.getShopConfig().upgrade();
-                            } else {
-                                p.sendMessage("You required " + upgradeCost + " gems to upgrade.");
-                            }
-                        } else {
-                            p.sendMessage(PlayerShops.colorize("&cMax shop level reached."));
-                        }
+                        PlayerShopUpgrade shopUpgradeEvent = new PlayerShopUpgrade(player, shopObject);
+                        Bukkit.getServer().getPluginManager().callEvent(shopUpgradeEvent);
                     }
                 }
             }
         } else if(e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.CHEST) {
-            EnhancedShopObject shopObject = EnhancedShopObject.getShop(e.getClickedBlock().getLocation());
+            ShopObject shopObject = ShopObject.getShop(e.getClickedBlock().getLocation());
             if(shopObject != null) {
                 e.setCancelled(true);
-                if(shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen") || shopObject.getShopOwnerID().equals(p.getUniqueId())) {
-                    p.openInventory(shopObject.getShopInventory().getInventory());
-                    p.playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_OPEN, 2.0F, 1.0F);
-                } else {
-                    p.sendMessage(PlayerShops.colorize("&cThat shop is not open."));
-                }
+
+                PlayerShopViewEvent shopViewEvent = new PlayerShopViewEvent(player, shopObject);
+                Bukkit.getServer().getPluginManager().callEvent(shopViewEvent);
+
             }
         }
     }
@@ -91,11 +79,33 @@ public class ShopEvent implements Listener, Serializable {
 
     /**
      * Will open an inventory revealing the contents of the clicked chest that is treated as a shop.
-     * @param e
+     * @param evt
      *         the custom event for when a player clicks a chest that is a verified shop location.
      */
     @EventHandler
-    public void shopViewEvent(PlayerShopViewEvent e) {
-        Player p = e.getPlayer();
+    public void shopViewEvent(PlayerShopViewEvent evt) {
+        Player viewer = evt.getViewer();
+        if(evt.getRequestedShop().getShopConfig().getOwnerConfig().getBoolean("player.shopOpen") || evt.getRequestedShop().getShopOwnerID().equals(viewer.getUniqueId())) {
+            viewer.openInventory(evt.getRequestedShop().getShopInventory().getInventory());
+            viewer.playSound(viewer.getLocation(), Sound.BLOCK_CHEST_OPEN, 2.0F, 1.0F);
+        } else {
+            viewer.sendMessage(PlayerShops.colorize("&cThat shop is not open."));
+        }
+    }
+
+    @EventHandler
+    public void shopUpgradeEvent(PlayerShopUpgrade evt) {
+        int currentRows = evt.getRequestedShop().getShopConfig().getShopTier();
+        int upgradeCost = 200 * currentRows;
+        if(currentRows < 5) {
+            if(Currency.calculateBalance(evt.getOwner()) >= upgradeCost) {
+                Currency.remove(evt.getOwner(), upgradeCost);
+                evt.getRequestedShop().getShopConfig().upgrade();
+            } else {
+                evt.getOwner().sendMessage("You required " + upgradeCost + " gems to upgrade.");
+            }
+        } else {
+            evt.getOwner().sendMessage(PlayerShops.colorize("&cMax shop level reached."));
+        }
     }
 }
