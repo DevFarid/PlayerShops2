@@ -94,7 +94,7 @@ public class ShopEvent implements Listener, Serializable {
     }
 
     @EventHandler
-    public void shopUpgradeEvent(PlayerShopUpgrade evt) {
+    public void shopUpgradeEvent(PlayerShopUpgrade evt) throws InstantiationException, IllegalAccessException {
         int currentRows = evt.getRequestedShop().getShopConfig().getShopTier();
         int upgradeCost = 200 * currentRows;
         if(currentRows < 5) {

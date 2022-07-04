@@ -14,7 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.List;
 import java.util.UUID;
 
-public class ShopConfig {
+public class ShopConfig implements UniversalShopStorage {
 
     UUID shopOwner;
     List<Location> shopLocation;
@@ -30,12 +30,6 @@ public class ShopConfig {
         this.initShopConfig();
     }
 
-    public void refresh() {
-        this.pConfig.save();
-        this.pConfig.discard();
-        this.pConfig = PlayerConfig.getConfig(this.shopOwner);
-    }
-
     public void initShopConfig() {
         checkConfigDefaults(this.shopOwner, pConfig);
 
@@ -47,7 +41,6 @@ public class ShopConfig {
         pConfig.set("player.shopViews.1", this.shopOwner.toString());
 
         pConfig.save();
-        pConfig
     }
 
     private void checkConfigDefaults(UUID uuid, PlayerConfig pConfig) {
@@ -67,7 +60,6 @@ public class ShopConfig {
     }
 
     public void uninitialize() {
-        refresh();
         pConfig.set("player.shopOpen", false);
         pConfig.set("player.location", null);
         pConfig.set("player.shopName", null);
@@ -79,12 +71,10 @@ public class ShopConfig {
     }
 
     public PlayerConfig getOwnerConfig() {
-        refresh();
         return this.pConfig;
     }
 
     public void toggleShopStatus() {
-        refresh();
         if(pConfig.getBoolean("player.shopOpen")) {
             pConfig.set("player.shopOpen", false);
         } else {
@@ -94,8 +84,7 @@ public class ShopConfig {
         pConfig.save();
     }
 
-    public void upgrade() {
-        refresh();
+    public void upgrade() throws InstantiationException, IllegalAccessException {
         int currentLevel = getShopTier();
         pConfig.set("player.shopTier", (currentLevel + 1));
         pConfig.save();
@@ -103,26 +92,38 @@ public class ShopConfig {
         Player player = Bukkit.getPlayer(shopOwner);
         player.sendMessage(PlayerShops.colorize("&a&l*** SHOP UPGRADE TO LEVEL " + (currentLevel+1) + " COMPLETE ***"));
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
+
+        ShopObject shopObject = shopLocationDirectory.get(this.shopOwner);
+
+        List<Location> locationList = shopObject.getShopLocation();
+        Location[] arrayLocation = new Location[]{locationList.get(0), locationList.get(1), locationList.get(2), locationList.get(3), locationList.get(4)};
+
+
+        ShopObject newInstance = new ShopObject(this.shopOwner, this.name, arrayLocation);
+        pConfig.save();
+        pConfig.discard();
+
+        ShopConfig newConfig = new ShopConfig(this.shopOwner, this.name, locationList);
+        shopObject.setShopConfig(newConfig);
+
+        shopLocationDirectory.remove(this.shopOwner);
+        shopLocationDirectory.put(this.shopOwner, newInstance);
     }
 
     public boolean getStatus() {
-        refresh();
         return pConfig.getBoolean("player.shopOpen");
     }
 
     public int getShopTier() {
-        refresh();
         return pConfig.getInt("player.shopTier");
     }
 
     public void updateName(String newName) {
-        refresh();
         pConfig.set("player.shopName", newName);
         updateHolograms();
     }
 
     public int getViews() {
-        refresh();
         int views = 0;
         if(pConfig.contains("player.shopViews")) {
             views = pConfig.getConfigurationSection("player.shopViews").getKeys(false).size();
@@ -131,14 +132,12 @@ public class ShopConfig {
     }
 
     public void updateHolograms() {
-        refresh();
         String shopStatus = getStatus() ? "&a" : "&c";
         Hologram.rename((shopStatus + pConfig.get("player.shopName")), shopLocation.get(2));
         Hologram.rename(("&f"+ getViews() + shopStatus + " view(s)"), shopLocation.get(3));
     }
 
     public void addItem(ItemStack itemStack, int price) {
-        refresh();
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> itemLore = itemMeta.getLore();
 
@@ -150,5 +149,12 @@ public class ShopConfig {
         UUID itemID = UUID.randomUUID();
         pConfig.set("player.contents." + itemID, itemStack);
         itemStack.setType(Material.AIR);
+    }
+
+    @Override
+    public void add(UUID uuid, ShopObject shopObject) {
+        if(!shopLocationDirectory.containsKey(uuid)) {
+            shopLocationDirectory.put(uuid, shopObject);
+        }
     }
 }

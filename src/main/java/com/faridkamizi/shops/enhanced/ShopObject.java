@@ -12,16 +12,15 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class ShopObject extends ShopLocation implements UniversalShopStorage {
-    private UUID shopOwner;
-    private String shopName;
+    private final UUID shopOwner;
+    private final String shopName;
     private ShopConfig shopConfig;
-    private ShopInventory shopInventory;
+    private final ShopInventory shopInventory;
 
     /**
      * Constructor for when a shop is to be created.
@@ -41,13 +40,6 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
 
         this.shopInventory = new ShopInventory(this.shopOwner, shopSize, this);
         this.createPhysicalProperties();
-    }
-
-    /**
-     * Empty constructor for {@code PlayerShops} main plugin.
-     */
-    public ShopObject() {
-
     }
 
     /**
@@ -82,33 +74,6 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
     }
 
     /**
-     * Deletes a shop, along with its physical properties and session-saved config values.
-     * @param uuid
-     *              the shop to be removed.
-     */
-    public void deleteShop(UUID uuid) {
-        if(shopLocationDirectory.containsKey(uuid)) {
-            ShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
-            ShopConfig shopCfg = shopOfPlayer.shopConfig;
-            List<Location> shopLocation = shopOfPlayer.getShopLocation();
-
-            if(shopLocation.get(4) != null) {
-                AsyncParticles.stopTask(shopLocation.get(4));
-            }
-
-            Hologram.deleteHolo(shopLocation.get(2));
-            Hologram.deleteHolo(shopLocation.get(3));
-
-            shopLocation.get(0).getBlock().setType(Material.AIR);
-            shopLocation.get(1).getBlock().setType(Material.AIR);
-
-            shopCfg.uninitialize();
-
-            shopLocationDirectory.remove(uuid);
-        }
-    }
-
-    /**
      * Get the owner of {@code this} shop.
      * @return
      *          the UUID that belongs to the owner
@@ -122,9 +87,12 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
      * @return
      *         the {@code ShopConfig} object associated with this {@code ShopObject}
      */
-    public ShopConfig getShopConfig() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        this.shopConfig = shopConfig.refresh();
+    public ShopConfig getShopConfig() {
         return this.shopConfig;
+    }
+
+    public void setShopConfig(ShopConfig newConfig) {
+        this.shopConfig = newConfig;
     }
 
     /**
@@ -155,9 +123,36 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
     }
 
     /**
+     * Deletes a shop, along with its physical properties and session-saved config values.
+     * @param uuid
+     *              the shop to be removed.
+     */
+    public static void deleteShop(UUID uuid) {
+        if(shopLocationDirectory.containsKey(uuid)) {
+            ShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
+            ShopConfig shopCfg = shopOfPlayer.shopConfig;
+            List<Location> shopLocation = shopOfPlayer.getShopLocation();
+
+            if(shopLocation.get(4) != null) {
+                AsyncParticles.stopTask(shopLocation.get(4));
+            }
+
+            Hologram.deleteHolo(shopLocation.get(2));
+            Hologram.deleteHolo(shopLocation.get(3));
+
+            shopLocation.get(0).getBlock().setType(Material.AIR);
+            shopLocation.get(1).getBlock().setType(Material.AIR);
+
+            shopCfg.uninitialize();
+
+            shopLocationDirectory.remove(uuid);
+        }
+    }
+
+    /**
      * Will remove all shops found in {@code PlayerShopStorage} static storage.
      */
-    public void closeAllShops() {
+    public static void closeAllShops() {
         for(Map.Entry<UUID, ShopObject> playerShopEntry : shopLocationDirectory.entrySet()) {
             deleteShop(playerShopEntry.getKey());
         }

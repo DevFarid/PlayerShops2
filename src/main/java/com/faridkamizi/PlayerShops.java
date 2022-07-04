@@ -15,8 +15,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class PlayerShops extends JavaPlugin {
     private final ShopCMDS shopCMDS = new ShopCMDS(this);
+
+    @SuppressWarnings("InstantiationOfUtilityClass")
     private final AsyncParticles particles = new AsyncParticles(this);
-    private final ShopObject shopObjects = new ShopObject();
+
 
     public static String colorize(String message)
     {
@@ -44,7 +46,7 @@ public class PlayerShops extends JavaPlugin {
         PlayerConfig.removeConfigs();
         Hologram.removeAll();
         AsyncParticles.stopAllTasks();
-        shopObjects.closeAllShops();
+        ShopObject.closeAllShops();
         this.getServer().getConsoleSender().sendMessage(ChatColor.RED + "PlayerShops disabled");
     }
 
