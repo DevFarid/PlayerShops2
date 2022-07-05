@@ -5,7 +5,7 @@ import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
-import com.faridkamizi.shops.enhanced.ShopObject;
+import com.faridkamizi.system.ShopObject;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -23,7 +23,7 @@ import java.util.*;
 public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
-    private final Inventory inventory;
+    private Inventory inventory;
     private final ShopObject shopObject;
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -154,6 +154,7 @@ public class ShopInventory implements ShopInventoryHolder {
 
     @Override
     public Inventory getInventory() {
+        this.setUp();
         return this.inventory;
     }
 
@@ -167,8 +168,8 @@ public class ShopInventory implements ShopInventoryHolder {
      * Set up the shop items.
      */
     private void setUp() {
-        int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
         this.inventory.clear();
+        int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
 
         HashMap<Integer, ItemStack> bottomRow = getShopMenuItems(owner, rowsLvlSize);
         List<ItemStack> ownerShopItems = getOwnerContents(owner);

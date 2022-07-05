@@ -1,7 +1,7 @@
 package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.shops.enhanced.ShopObject;
+import com.faridkamizi.system.ShopObject;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

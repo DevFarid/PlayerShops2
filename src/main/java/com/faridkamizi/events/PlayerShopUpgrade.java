@@ -1,6 +1,6 @@
 package com.faridkamizi.events;
 
-import com.faridkamizi.shops.enhanced.ShopObject;
+import com.faridkamizi.system.ShopObject;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

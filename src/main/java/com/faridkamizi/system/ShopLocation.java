@@ -1,4 +1,4 @@
-package com.faridkamizi.shops.enhanced;
+package com.faridkamizi.system;
 
 import org.bukkit.Location;
 

@@ -1,4 +1,4 @@
-package com.faridkamizi.shops;
+package com.faridkamizi.system.commands;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;

@@ -1,4 +1,4 @@
-package com.faridkamizi.shops.enhanced;
+package com.faridkamizi.system;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.gui.ShopInventory;
@@ -40,6 +40,8 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
 
         this.shopInventory = new ShopInventory(this.shopOwner, shopSize, this);
         this.createPhysicalProperties();
+
+        add(shopOwner, this);
     }
 
     /**
@@ -65,8 +67,6 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
             org.bukkit.block.data.type.Chest chestBlockState2 = (org.bukkit.block.data.type.Chest) block2.getBlockData();
             chestBlockState2.setType(Chest.Type.RIGHT);
             block2.setBlockData(chestBlockState2, true);
-
-            add(shopOwner, this);
 
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
             player.sendMessage(PlayerShops.colorize("\n&e&lYOU'VE CREATED A SHOP!\n&eTo stock your shop, simply drag items into your shop's inventory."));

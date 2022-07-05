@@ -1,4 +1,4 @@
-package com.faridkamizi.shops;
+package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
@@ -7,7 +7,7 @@ import com.faridkamizi.events.PlayerShopViewEvent;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.events.PrePlayerShopCreation;
 import com.faridkamizi.inventory.guiListener.ShopListener;
-import com.faridkamizi.shops.enhanced.ShopObject;
+import com.faridkamizi.system.ShopObject;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;

@@ -1,11 +1,10 @@
-package com.faridkamizi.shops.enhanced;
+package com.faridkamizi.system;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -176,6 +175,10 @@ public class ShopConfig implements UniversalShopStorage {
 
         pConfig.save();
         pConfig.discard();
+
+        Player player = Bukkit.getPlayer(this.shopOwner);
+        player.sendMessage(PlayerShops.colorize("&aPrice set. Right-Click item to edit."));
+        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT, 2.0F, 1.0F);
     }
 
     @Override

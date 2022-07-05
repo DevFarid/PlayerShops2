@@ -2,7 +2,7 @@ package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.holders.ShopSFXHolder;
-import com.faridkamizi.shops.enhanced.ShopObject;
+import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
