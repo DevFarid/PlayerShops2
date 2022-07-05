@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,18 +20,17 @@ public class ShopConfig implements UniversalShopStorage {
     UUID shopOwner;
     List<Location> shopLocation;
     String name;
-    PlayerConfig pConfig;
 
     public ShopConfig(UUID player, String shopName, List<Location> shopLocation) {
         this.shopOwner = player;
         this.shopLocation = shopLocation;
         this.name = shopName;
-        this.pConfig = PlayerConfig.getConfig(this.shopOwner);
 
         this.initShopConfig();
     }
 
     public void initShopConfig() {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         checkConfigDefaults(this.shopOwner, pConfig);
 
         pConfig.set("player.shopOpen", false);
@@ -41,6 +41,7 @@ public class ShopConfig implements UniversalShopStorage {
         pConfig.set("player.shopViews.1", this.shopOwner.toString());
 
         pConfig.save();
+        pConfig.discard();
     }
 
     private void checkConfigDefaults(UUID uuid, PlayerConfig pConfig) {
@@ -60,6 +61,7 @@ public class ShopConfig implements UniversalShopStorage {
     }
 
     public void uninitialize() {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         pConfig.set("player.shopOpen", false);
         pConfig.set("player.location", null);
         pConfig.set("player.shopName", null);
@@ -71,10 +73,12 @@ public class ShopConfig implements UniversalShopStorage {
     }
 
     public PlayerConfig getOwnerConfig() {
-        return this.pConfig;
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        return pConfig;
     }
 
     public void toggleShopStatus() {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         if(pConfig.getBoolean("player.shopOpen")) {
             pConfig.set("player.shopOpen", false);
         } else {
@@ -82,9 +86,11 @@ public class ShopConfig implements UniversalShopStorage {
         }
         updateHolograms();
         pConfig.save();
+        pConfig.discard();
     }
 
     public void upgrade() throws InstantiationException, IllegalAccessException {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         int currentLevel = getShopTier();
         pConfig.set("player.shopTier", (currentLevel + 1));
         pConfig.save();
@@ -111,35 +117,53 @@ public class ShopConfig implements UniversalShopStorage {
     }
 
     public boolean getStatus() {
-        return pConfig.getBoolean("player.shopOpen");
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        boolean isOpen = pConfig.getBoolean("player.shopOpen");
+        return isOpen;
     }
 
     public int getShopTier() {
-        return pConfig.getInt("player.shopTier");
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        int shopTier = pConfig.getInt("player.shopTier");
+        return shopTier;
     }
 
     public void updateName(String newName) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         pConfig.set("player.shopName", newName);
+        pConfig.save();
+        pConfig.discard();
         updateHolograms();
     }
 
     public int getViews() {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         int views = 0;
         if(pConfig.contains("player.shopViews")) {
             views = pConfig.getConfigurationSection("player.shopViews").getKeys(false).size();
         }
+        pConfig.discard();
         return views;
     }
 
     public void updateHolograms() {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         String shopStatus = getStatus() ? "&a" : "&c";
         Hologram.rename((shopStatus + pConfig.get("player.shopName")), shopLocation.get(2));
         Hologram.rename(("&f"+ getViews() + shopStatus + " view(s)"), shopLocation.get(3));
+        pConfig.discard();
     }
 
     public void addItem(ItemStack itemStack, int price) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> itemLore = itemMeta.getLore();
+        List<String> itemLore;
+
+        if(itemMeta.getLore() != null) {
+            itemLore = itemMeta.getLore();
+        } else {
+            itemLore = new ArrayList<>();
+        }
 
         itemLore.add(PlayerShops.colorize("&aPrice: &f" + price + "g &aeach"));
         itemMeta.setLore(itemLore);
@@ -147,8 +171,11 @@ public class ShopConfig implements UniversalShopStorage {
         itemStack.setItemMeta(itemMeta);
 
         UUID itemID = UUID.randomUUID();
+
         pConfig.set("player.contents." + itemID, itemStack);
-        itemStack.setType(Material.AIR);
+
+        pConfig.save();
+        pConfig.discard();
     }
 
     @Override

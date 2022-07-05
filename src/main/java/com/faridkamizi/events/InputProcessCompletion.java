@@ -51,8 +51,8 @@ public class InputProcessCompletion implements Listener {
             ItemStack itemStack = (ItemStack) correlated.extraInformation;
             if(isValidPrice(e.getInput())) {
                 ShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()));
-            } else {
                 e.getPlayer().getInventory().addItem(itemStack);
+            } else {
                 e.getPlayer().sendMessage(PlayerShops.colorize("&c&c'" + e.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
             }
         } else if(correlated.extraInformation == null && (correlated.correlatedEvent instanceof InventoryClickEvent)) {
