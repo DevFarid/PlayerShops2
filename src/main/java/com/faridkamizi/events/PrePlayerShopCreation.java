@@ -37,4 +37,7 @@ public class PrePlayerShopCreation extends Event {
     public Location getLocation() {
         return loc;
     }
+
+    @Override
+    public String getEventName() { return "SHOP NAME"; }
 }

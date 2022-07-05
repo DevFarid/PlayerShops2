@@ -3,6 +3,8 @@ package com.faridkamizi;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.events.InputProcessCompletion;
 import com.faridkamizi.events.PreInputProcess;
+import com.faridkamizi.events.enhanced.ProcessInputEvent;
+import com.faridkamizi.events.enhanced.RequestInputEvent;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.UniversalShopStorage;
 import com.faridkamizi.system.commands.ShopCMDS;
@@ -34,8 +36,11 @@ public class PlayerShops extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new Hologram(), this);
         this.getServer().getPluginManager().registerEvents(new ShopEvent(), this);
         this.getServer().getPluginManager().registerEvents(new ShopListener(), this);
-        this.getServer().getPluginManager().registerEvents(new PreInputProcess(), this);
-        this.getServer().getPluginManager().registerEvents(new InputProcessCompletion(), this);
+//        this.getServer().getPluginManager().registerEvents(new PreInputProcess(), this);
+//        this.getServer().getPluginManager().registerEvents(new InputProcessCompletion(), this);
+
+        this.getServer().getPluginManager().registerEvents(new RequestInputEvent(), this);
+        this.getServer().getPluginManager().registerEvents(new ProcessInputEvent(), this);
 
         this.getCommand("banknote").setExecutor(shopCMDS);
         this.getCommand("test").setExecutor(shopCMDS);

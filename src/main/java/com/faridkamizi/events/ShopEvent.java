@@ -6,6 +6,8 @@ import com.faridkamizi.events.PlayerShopUpgrade;
 import com.faridkamizi.events.PlayerShopViewEvent;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.events.PrePlayerShopCreation;
+import com.faridkamizi.events.enhanced.RequestEvent;
+import com.faridkamizi.events.enhanced.RequestInputEvent;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.ShopObject;
 import org.bukkit.Bukkit;
@@ -36,7 +38,10 @@ public class ShopEvent implements Listener, Serializable {
                 e.setCancelled(true);
 
                 PrePlayerShopCreation shopCreationEvent = new PrePlayerShopCreation(player, e.getClickedBlock().getLocation());
-                Bukkit.getServer().getPluginManager().callEvent(shopCreationEvent);
+
+                RequestEvent evt = new RequestEvent(player.getUniqueId(), shopCreationEvent, (Object) null);
+                RequestInputEvent.request(player.getUniqueId(), evt);
+
 
             } else if(e.getClickedBlock().getType().equals(Material.CHEST)) {
                 ShopObject shopObject = ShopObject.getShop(e.getClickedBlock().getLocation());
@@ -63,19 +68,19 @@ public class ShopEvent implements Listener, Serializable {
         }
     }
 
-    /**
-     * Prepares to create a shop for a player
-     * @param e
-     *          the custom even for when a player is about to create a shop.
-     */
-    @EventHandler
-    public void shopCreationEvent(PrePlayerShopCreation e) {
-        Player p = e.getPlayer();
-
-        p.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&e. [max 16 characters]"));
-        p.playSound(p.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 2F, 1F);
-        PreInputProcess.requestPlayer(p, e);
-    }
+//    /**
+//     * Prepares to create a shop for a player
+//     * @param e
+//     *          the custom even for when a player is about to create a shop.
+//     */
+//    @EventHandler
+//    public void shopCreationEvent(PrePlayerShopCreation e) {
+//        Player p = e.getPlayer();
+//
+//        p.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&e. [max 16 characters]"));
+//        p.playSound(p.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 2F, 1F);
+//        PreInputProcess.requestPlayer(p, e);
+//    }
 
     /**
      * Will open an inventory revealing the contents of the clicked chest that is treated as a shop.

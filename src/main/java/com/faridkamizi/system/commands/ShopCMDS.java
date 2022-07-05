@@ -2,6 +2,8 @@ package com.faridkamizi.system.commands;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.enhanced.RequestEvent;
+import com.faridkamizi.events.enhanced.RequestInputEvent;
 import com.faridkamizi.inventory.gui.ShopInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -54,7 +56,6 @@ public class ShopCMDS implements CommandExecutor {
                     player.getInventory().addItem(bankNote);
                 }
             } else if(command.getName().equals("test")) {
-                Currency.remove(player, 5000);
             }
             return true;
         }

@@ -4,6 +4,8 @@ import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
 import com.faridkamizi.events.PreInputProcess;
+import com.faridkamizi.events.enhanced.RequestEvent;
+import com.faridkamizi.events.enhanced.RequestInputEvent;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
@@ -24,7 +26,7 @@ import java.util.*;
 public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
-    private Inventory inventory;
+    private final Inventory inventory;
     private final ShopObject shopObject;
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -46,36 +48,40 @@ public class ShopInventory implements ShopInventoryHolder {
      */
 
     @Override
-    public void onClick(InventoryClickEvent e) {
-        if(e.getClick() == ClickType.LEFT) {
-            Player player = (Player) e.getWhoClicked();
+    public void onClick(InventoryClickEvent invEvt) {
+        if(invEvt.getClick() == ClickType.LEFT) {
+            Player player = (Player) invEvt.getWhoClicked();
             boolean isOwner = player.getUniqueId().equals(this.owner);
-            if (e.getClickedInventory() != null) {
-                if ((e.getClickedInventory().getType() == InventoryType.CHEST) && e.getCurrentItem() == null && e.getCursor() != null) {
+            if (invEvt.getClickedInventory() != null) {
+                if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() == null && invEvt.getCursor() != null) {
                     if (isOwner) {
                         if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
-                            player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + e.getCursor().getAmount() + "x&a] of this item."));
-                            PreInputProcess.requestPlayer(player, e);
-                            e.getWhoClicked().setItemOnCursor(null);
+                            player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
+                            PreInputProcess.requestPlayer(player, invEvt);
+
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, invEvt.getRawSlot(), invEvt.getCursor().clone());
+                            RequestInputEvent.request(this.owner, evt);
+
+                            invEvt.getWhoClicked().setItemOnCursor(null);
                             player.closeInventory();
                         } else {
-                            e.setCancelled(true);
+                            invEvt.setCancelled(true);
                             player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));
                         }
                     } else {
-                        e.setCancelled(true);
+                        invEvt.setCancelled(true);
                     }
-                } else if (((e.getClickedInventory().getType() == InventoryType.CHEST)) && e.getCurrentItem() != null && e.getCursor().getType().isAir()) {
-                    e.setCancelled(true);
+                } else if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && invEvt.getCursor().getType().isAir()) {
+                    invEvt.setCancelled(true);
                     // Shop History Function.
-                    if (e.getRawSlot() == e.getClickedInventory().getSize() - 9) {
+                    if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 9) {
                         OfflinePlayer shopOwner = Bukkit.getOfflinePlayer(this.owner);
                         ShopHistoryInventory shopHistoryInventory = new ShopHistoryInventory(this.owner, PlayerShops.colorize("&8" + shopOwner.getName() + "'s Shop History"), 9);
                         player.closeInventory();
                         player.openInventory(shopHistoryInventory.getInventory());
                     }
                     // ChestSFX menu.
-                    else if (e.getRawSlot() == e.getClickedInventory().getSize() - 8) {
+                    else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 8) {
                         if (isOwner) {
                             ShopSFXInventory sfxInventory = new ShopSFXInventory(this.owner, PlayerShops.colorize("&8Shop Effect Selector"), 9);
                             player.closeInventory();
@@ -83,17 +89,16 @@ public class ShopInventory implements ShopInventoryHolder {
                         }
                     }
                     // Rename shop function.
-                    else if (e.getRawSlot() == e.getClickedInventory().getSize() - 7) {
+                    else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 7) {
                         if (isOwner) {
-                            player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&e. [max 16 characters]"));
+                            player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&invEvt. [max 16 characters]"));
                             player.closeInventory();
-                            PreInputProcess.requestPlayer(player, e);
+                            PreInputProcess.requestPlayer(player, invEvt);
                         }
                     }
                     // Delete shop function.
-                    else if (e.getRawSlot() == e.getClickedInventory().getSize() - 2) {
+                    else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 2) {
                         if (isOwner) {
-
                             // TO-DO: CLOSE this inventory for whoever that may have it open.
                             UniversalShopStorage.deleteShop(this.owner);
                             player.closeInventory();
@@ -101,42 +106,42 @@ public class ShopInventory implements ShopInventoryHolder {
                         }
                     }
                     // Open/Close function.
-                    else if (e.getRawSlot() == e.getClickedInventory().getSize() - 1) {
+                    else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 1) {
                         if (isOwner) {
                             shopObject.getShopConfig().toggleShopStatus();
                             ItemStack openStatus = createGuiItem(Material.LIME_DYE, "&cClick to &lCLOSE &cShop", PlayerShops.colorize("&fClick to &cclose&f shop."));
                             ItemStack closedStatus = createGuiItem(Material.GRAY_DYE, "&aClick to &lOPEN &aShop", PlayerShops.colorize("&fClick to &2open&f shop."));
                             if (shopObject.getShopConfig().getStatus()) {
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
-                                e.getClickedInventory().setItem(e.getRawSlot(), openStatus);
+                                invEvt.getClickedInventory().setItem(invEvt.getRawSlot(), openStatus);
                             } else {
                                 player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 2.0F, 1.0F);
-                                e.getClickedInventory().setItem(e.getRawSlot(), closedStatus);
+                                invEvt.getClickedInventory().setItem(invEvt.getRawSlot(), closedStatus);
                             }
 
                         }
                     }
                     // Otherwise, the owner is trying to add an item.
-                    else if (e.getRawSlot() < e.getClickedInventory().getSize() - 9) {
+                    else if (invEvt.getRawSlot() < invEvt.getClickedInventory().getSize() - 9) {
                         if (isOwner) {
                             if (!shopObject.getShopConfig().getStatus()) {
-                                process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
+                                process(this.owner, player.getUniqueId(), invEvt.getCurrentItem(), invEvt.getRawSlot());
                             } else {
-                                e.getWhoClicked().closeInventory();
+                                invEvt.getWhoClicked().closeInventory();
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
-                            int itemPrice = itemPrice(e.getCurrentItem());
+                            int itemPrice = itemPrice(invEvt.getCurrentItem());
                             if (Currency.calculateBalance(player) >= itemPrice) {
                                 Currency.remove(player, itemPrice);
-                                ItemStack forSave = e.getCurrentItem();
-                                process(this.owner, player.getUniqueId(), e.getCurrentItem(), e.getRawSlot());
+                                ItemStack forSave = invEvt.getCurrentItem();
+                                process(this.owner, player.getUniqueId(), invEvt.getCurrentItem(), invEvt.getRawSlot());
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
                                 player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
 
                                 OfflinePlayer owner = Bukkit.getOfflinePlayer(this.owner);
                                 if (owner.isOnline()) {
-                                    owner.getPlayer().sendMessage(PlayerShops.colorize("&a" + e.getWhoClicked().getName() + " bought " + forSave.getType().name()));
+                                    owner.getPlayer().sendMessage(PlayerShops.colorize("&a" + invEvt.getWhoClicked().getName() + " bought " + forSave.getType().name()));
                                 }
                             } else {
                                 player.sendMessage(PlayerShops.colorize("&cYou do not have enough gems."));
@@ -144,12 +149,12 @@ public class ShopInventory implements ShopInventoryHolder {
                             }
                         }
                     }
-                } else if (((e.getClickedInventory().getType() == InventoryType.CHEST)) && e.getCurrentItem() != null && !(e.getCursor().getType().isAir())) {
-                    e.setCancelled(true);
+                } else if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && !(invEvt.getCursor().getType().isAir())) {
+                    invEvt.setCancelled(true);
                 }
             }
         } else {
-            e.setCancelled(true);
+            invEvt.setCancelled(true);
         }
     }
 
