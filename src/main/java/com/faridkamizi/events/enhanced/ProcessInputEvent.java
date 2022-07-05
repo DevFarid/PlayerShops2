@@ -12,8 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-
 public class ProcessInputEvent extends Event implements Listener {
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -82,14 +80,28 @@ public class ProcessInputEvent extends Event implements Listener {
             }
         } else if(reqEvt.coEvent instanceof InventoryClickEvent) {
             if(reqEvt.objects != null) {
-                ArrayList<Object> data = reqEvt.objects;
-                int slot = (int) data.get(0);
-                ItemStack itemStack = (ItemStack) data.get(1);
+                Object[] data = reqEvt.objects;
 
-                if(isValidPrice(evt.getInput())) {
-                    ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()));
+                boolean repriceEvt = (boolean) data[0];
+
+                if(repriceEvt) {
+                    int slot = (int) data[1];
+                    ItemStack itemStack = (ItemStack) data[2];
+
+                    if (isValidPrice(evt.getInput())) {
+                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
+                    } else {
+                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                    }
                 } else {
-                    player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                    int slot = (int) data[1];
+                    ItemStack itemStack = (ItemStack) data[2];
+
+                    if (isValidPrice(evt.getInput())) {
+                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
+                    } else {
+                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                    }
                 }
             }
         }

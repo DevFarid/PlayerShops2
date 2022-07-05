@@ -50,7 +50,7 @@ public class InputProcessCompletion implements Listener {
         else if(correlated.extraInformation != null && (correlated.correlatedEvent instanceof InventoryClickEvent)) {
             ItemStack itemStack = (ItemStack) correlated.extraInformation;
             if(isValidPrice(e.getInput())) {
-                ShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()));
+//                ShopObject.shopLocationDirectory.get(correlated.player).getShopConfig().addItem(itemStack, Integer.parseInt(e.getInput()), slot);
             } else {
                 e.getPlayer().sendMessage(PlayerShops.colorize("&c&c'" + e.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
             }

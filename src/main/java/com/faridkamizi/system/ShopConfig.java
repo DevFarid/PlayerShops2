@@ -166,7 +166,7 @@ public class ShopConfig implements UniversalShopStorage {
         pConfig.discard();
     }
 
-    public void addItem(ItemStack itemStack, int price) {
+    public void addItem(ItemStack itemStack, int price, int slot) {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> itemLore;
@@ -184,7 +184,8 @@ public class ShopConfig implements UniversalShopStorage {
 
         UUID itemID = UUID.randomUUID();
 
-        pConfig.set("player.contents." + itemID, itemStack);
+        pConfig.set("player.contents." + itemID + ".itemstack", itemStack);
+        pConfig.set("player.contents." + itemID + ".slot", slot);
 
         pConfig.save();
         pConfig.discard();

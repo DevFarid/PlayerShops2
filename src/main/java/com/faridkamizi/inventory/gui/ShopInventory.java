@@ -49,17 +49,18 @@ public class ShopInventory implements ShopInventoryHolder {
 
     @Override
     public void onClick(InventoryClickEvent invEvt) {
+        Player player = (Player) invEvt.getWhoClicked();
+        boolean isOwner = player.getUniqueId().equals(this.owner);
         if(invEvt.getClick() == ClickType.LEFT) {
-            Player player = (Player) invEvt.getWhoClicked();
-            boolean isOwner = player.getUniqueId().equals(this.owner);
             if (invEvt.getClickedInventory() != null) {
                 if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() == null && invEvt.getCursor() != null) {
                     if (isOwner) {
                         if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
                             player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
-                            PreInputProcess.requestPlayer(player, invEvt);
+                            boolean reprice = false;
+                            Object[] objects = {reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
 
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, invEvt.getRawSlot(), invEvt.getCursor().clone());
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
                             RequestInputEvent.request(this.owner, evt);
 
                             invEvt.getWhoClicked().setItemOnCursor(null);
@@ -153,7 +154,21 @@ public class ShopInventory implements ShopInventoryHolder {
                     invEvt.setCancelled(true);
                 }
             }
-        } else {
+        } else if(invEvt.getClick() == ClickType.RIGHT) {
+            invEvt.setCancelled(true);
+            if(isOwner) {
+                if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() != null && invEvt.getCursor() == null) {
+                    boolean reprice = true;
+                    Object[] objects = {reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
+
+                    RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
+                    RequestInputEvent.request(this.owner, evt);
+
+                    player.closeInventory();
+                }
+            }
+        }
+        else {
             invEvt.setCancelled(true);
         }
     }
@@ -177,33 +192,15 @@ public class ShopInventory implements ShopInventoryHolder {
         this.inventory.clear();
         int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
 
-        HashMap<Integer, ItemStack> bottomRow = getShopMenuItems(owner, rowsLvlSize);
-        List<ItemStack> ownerShopItems = getOwnerContents(owner);
+        Map<Integer, ItemStack> ownerShopItems = getOwnerContents(owner);
+        ownerShopItems.putAll(getShopMenuItems(owner, rowsLvlSize));
 
-        int currentRow = 0;
-        int maxSlot = 9*rowsLvlSize;
-        int counter = 0;
-        int slot = 0;
-        for(ItemStack i : ownerShopItems) {
-            if(currentRow < maxSlot) {
-                this.inventory.setItem(slot, i);
-
-                counter++;
-                if(counter > 8) {
-                    currentRow++;
-                    counter = 0;
-                }
-            } else {
-                break;
-            }
-            slot++;
+        for(Map.Entry<Integer, ItemStack> entry : ownerShopItems.entrySet()) {
+            this.inventory.setItem(entry.getKey(), entry.getValue());
         }
 
-        for(Map.Entry<Integer, ItemStack> rowEntry : bottomRow.entrySet()) {
-            this.inventory.setItem(rowEntry.getKey(), rowEntry.getValue());
-        }
         for(int i = 1; i < 4; i++) {
-            this.inventory.setItem((rowsLvlSize*9-6+i), (bottomRow.get(rowsLvlSize*9-6)));
+            this.inventory.setItem((rowsLvlSize*9-6+i), (ownerShopItems.get(rowsLvlSize*9-6)));
         }
     }
 
@@ -218,7 +215,7 @@ public class ShopInventory implements ShopInventoryHolder {
         if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
             Set<String> keys = pConfig.getConfigurationSection("player.contents").getKeys(false);
             for (String key : keys) {
-                ItemStack itemStack = pConfig.getItemStack("player.contents." + key);
+                ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
                 ItemStack historyStack = itemStack.clone();
                 if (itemSlot.equals(itemStack)) {
 
@@ -261,15 +258,16 @@ public class ShopInventory implements ShopInventoryHolder {
      * @return
      *        the list containing the contents of a shop.
      */
-    private static List<ItemStack> getOwnerContents(UUID player) {
-        List<ItemStack> ownerItems = new ArrayList<>();
+    private static Map<Integer, ItemStack> getOwnerContents(UUID player) {
+        Map<Integer, ItemStack> ownerItems = new HashMap<>();
         PlayerConfig pConfig = PlayerConfig.getConfig(player);
         ConfigurationSection cfg = pConfig.getConfigurationSection("player.contents");
         if(pConfig.contains("player.contents")) {
             Set<String> keys = cfg.getKeys(false);
             for (String key : keys) {
-                ItemStack i = pConfig.getItemStack("player.contents." + key);
-                ownerItems.add(ownerItems.size(), i);
+                ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
+                int slot = pConfig.getInt("player.contents." + key + ".slot");
+                ownerItems.put(slot, itemStack);
             }
         }
         pConfig.discard();
@@ -283,7 +281,7 @@ public class ShopInventory implements ShopInventoryHolder {
      * @return
      *          the string of ItemStack that will be returned for GUI placement and information.
      */
-    public static HashMap<Integer, ItemStack> getShopMenuItems(UUID owner, int shopTier) {
+    public static Map<Integer, ItemStack> getShopMenuItems(UUID owner, int shopTier) {
         HashMap<Integer, ItemStack> shopMenuItems = new HashMap<>();
         PlayerConfig pConfig = PlayerConfig.getConfig(owner);
         boolean shopStatus = pConfig.getBoolean("player.shopOpen");
