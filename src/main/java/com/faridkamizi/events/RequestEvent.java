@@ -1,8 +1,8 @@
-package com.faridkamizi.events.enhanced;
+package com.faridkamizi.events;
 
 import org.bukkit.event.Event;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 
@@ -12,7 +12,7 @@ public class RequestEvent {
 
     Object[] objects;
 
-    public RequestEvent(UUID uuid, Event evt, Object... aObj) {
+    public RequestEvent(UUID uuid, Event evt, @Nullable Object... aObj) {
         this.requestOwnerID = uuid;
         this.coEvent = evt;
 

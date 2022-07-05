@@ -3,9 +3,8 @@ package com.faridkamizi.inventory.gui;
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
-import com.faridkamizi.events.PreInputProcess;
-import com.faridkamizi.events.enhanced.RequestEvent;
-import com.faridkamizi.events.enhanced.RequestInputEvent;
+import com.faridkamizi.events.RequestEvent;
+import com.faridkamizi.events.RequestInputEvent;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
@@ -94,7 +93,9 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (isOwner) {
                             player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&invEvt. [max 16 characters]"));
                             player.closeInventory();
-                            PreInputProcess.requestPlayer(player, invEvt);
+
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, null);
+                            RequestInputEvent.request(this.owner, evt);
                         }
                     }
                     // Delete shop function.
@@ -126,23 +127,24 @@ public class ShopInventory implements ShopInventoryHolder {
                     else if (invEvt.getRawSlot() < invEvt.getClickedInventory().getSize() - 9) {
                         if (isOwner) {
                             if (!shopObject.getShopConfig().getStatus()) {
-                                process(this.owner, player.getUniqueId(), invEvt.getCurrentItem(), invEvt.getRawSlot());
+                                process(this.owner, player.getUniqueId(), invEvt.getRawSlot());
                             } else {
                                 invEvt.getWhoClicked().closeInventory();
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
-                            int itemPrice = itemPrice(invEvt.getCurrentItem());
+                            ItemStack shopItem = invEvt.getCurrentItem().clone();
+                            int slot = invEvt.getRawSlot();
+                            int itemPrice = shopObject.getShopConfig().getItemPrice(slot);
                             if (Currency.calculateBalance(player) >= itemPrice) {
                                 Currency.remove(player, itemPrice);
-                                ItemStack forSave = invEvt.getCurrentItem();
-                                process(this.owner, player.getUniqueId(), invEvt.getCurrentItem(), invEvt.getRawSlot());
+                                process(this.owner, player.getUniqueId(), slot);
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
                                 player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
 
                                 OfflinePlayer owner = Bukkit.getOfflinePlayer(this.owner);
                                 if (owner.isOnline()) {
-                                    owner.getPlayer().sendMessage(PlayerShops.colorize("&a" + invEvt.getWhoClicked().getName() + " bought " + forSave.getType().name()));
+                                    owner.getPlayer().sendMessage(PlayerShops.colorize("&a" + invEvt.getWhoClicked().getName() + " bought " + shopItem.getType().name()));
                                 }
                             } else {
                                 player.sendMessage(PlayerShops.colorize("&cYou do not have enough gems."));
@@ -155,6 +157,7 @@ public class ShopInventory implements ShopInventoryHolder {
                 }
             }
         } else if(invEvt.getClick() == ClickType.RIGHT) {
+            // Reprice shop item.
             invEvt.setCancelled(true);
             if(isOwner) {
                 if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() != null && invEvt.getCursor() == null) {
@@ -209,31 +212,26 @@ public class ShopInventory implements ShopInventoryHolder {
      * {@code UUID} player can be the {@code UUID} owner, themself, if so remove the item.
      * If not, then attempt to proceed to purchase the item for x price.
      */
-    public void process(UUID shopOwner, UUID forPlayer, ItemStack itemSlot, int slot) {
+    public void process(UUID shopOwner, UUID forPlayer, int slot) {
         Player player = Bukkit.getPlayer(forPlayer);
         PlayerConfig pConfig = PlayerConfig.getConfig(shopOwner);
         if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
             Set<String> keys = pConfig.getConfigurationSection("player.contents").getKeys(false);
             for (String key : keys) {
-                ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
-                ItemStack historyStack = itemStack.clone();
-                if (itemSlot.equals(itemStack)) {
+                int configSlot = pConfig.getInt("player.contents." + key + ".slot");
+                if (configSlot == slot) {
+                    ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
 
                     if(!shopOwner.equals(forPlayer)) {
-                        pConfig.set("player.shopHistory."+key, historyStack);
+                        pConfig.set("player.shopHistory."+key, this.inventory.getItem(slot));
                     }
-
-                    deletePriceTag(itemStack);
-
                     this.inventory.setItem(slot, null);
-
 
                     player.getInventory().addItem(itemStack);
                     pConfig.set("player.contents." + key, null);
 
                     // TO-DO: CLOSE this inventory for whoever that may have it open.
                     this.shopObject.getShopInventory().getInventory().setItem(slot, null);
-
                     break;
                 }
             }
@@ -267,6 +265,19 @@ public class ShopInventory implements ShopInventoryHolder {
             for (String key : keys) {
                 ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
                 int slot = pConfig.getInt("player.contents." + key + ".slot");
+                int price = pConfig.getInt("player.contents." + key + ".price");
+
+                // Display price tag
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                List<String> lore;
+
+                if(itemMeta.getLore() != null) { lore = itemMeta.getLore(); }
+                else { lore = new ArrayList<>(); }
+                lore.add(0, PlayerShops.colorize("&aPrice: &f" + price + "g &aeach"));
+
+                itemMeta.setLore(lore);
+                itemStack.setItemMeta(itemMeta);
+
                 ownerItems.put(slot, itemStack);
             }
         }
@@ -359,45 +370,4 @@ public class ShopInventory implements ShopInventoryHolder {
 
         return item;
     }
-
-    /**
-     * Given a shop item, this function will report the price of a given item in a shop.
-     * @param itemStack
-     *                  the clicked item being passed.
-     * @return
-     *          the integer that represents the price.
-     */
-    public static int itemPrice(ItemStack itemStack) {
-        int price = 0;
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
-        String[] splitLore = lore.get(lore.size()-1).split(" ");
-
-        splitLore[1] = splitLore[1].replaceAll("g", "");
-
-        price = Integer.parseInt(ChatColor.stripColor(splitLore[1]));
-
-        return price;
-    }
-
-    /**
-     * Will remove a shop price tag from an {@code ItemStack} in a shop.
-     * @param itemStack
-     *                  the itemstack in the interest of having their price tag removed.
-     */
-    public static void deletePriceTag(ItemStack itemStack) {
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = null;
-
-        if (itemMeta.getLore() != null) {
-            lore = itemMeta.getLore();
-            lore.remove(lore.size()-1);
-        } else {
-            itemMeta.getLore().clear();
-        }
-        
-        itemMeta.setLore(lore);
-        itemStack.setItemMeta(itemMeta);
-    }
-
 }

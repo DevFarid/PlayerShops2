@@ -1,4 +1,4 @@
-package com.faridkamizi.events.enhanced;
+package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
 import org.bukkit.Bukkit;

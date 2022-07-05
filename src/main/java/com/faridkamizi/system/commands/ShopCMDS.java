@@ -1,9 +1,6 @@
 package com.faridkamizi.system.commands;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.currency.Currency;
-import com.faridkamizi.events.enhanced.RequestEvent;
-import com.faridkamizi.events.enhanced.RequestInputEvent;
 import com.faridkamizi.inventory.gui.ShopInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

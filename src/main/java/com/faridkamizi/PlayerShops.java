@@ -1,15 +1,12 @@
 package com.faridkamizi;
 
 import com.faridkamizi.config.PlayerConfig;
-import com.faridkamizi.events.InputProcessCompletion;
-import com.faridkamizi.events.PreInputProcess;
-import com.faridkamizi.events.enhanced.ProcessInputEvent;
-import com.faridkamizi.events.enhanced.RequestInputEvent;
+import com.faridkamizi.events.ProcessInputEvent;
+import com.faridkamizi.events.RequestInputEvent;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.UniversalShopStorage;
 import com.faridkamizi.system.commands.ShopCMDS;
 import com.faridkamizi.events.ShopEvent;
-import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.ChatColor;

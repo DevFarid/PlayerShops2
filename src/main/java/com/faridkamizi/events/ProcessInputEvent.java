@@ -1,7 +1,7 @@
-package com.faridkamizi.events.enhanced;
+package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.events.PrePlayerShopCreation;
+import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.system.ShopObject;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -89,7 +89,7 @@ public class ProcessInputEvent extends Event implements Listener {
                     ItemStack itemStack = (ItemStack) data[2];
 
                     if (isValidPrice(evt.getInput())) {
-                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
+                        // reprice the item.
                     } else {
                         player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
                     }
@@ -102,6 +102,12 @@ public class ProcessInputEvent extends Event implements Listener {
                     } else {
                         player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
                     }
+                }
+            } else {
+                if(isValidTitle(evt.getInput())) {
+                    ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().updateName(evt.getInput());
+                } else {
+                    player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
                 }
             }
         }

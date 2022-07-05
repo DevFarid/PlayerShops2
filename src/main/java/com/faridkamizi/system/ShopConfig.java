@@ -7,13 +7,11 @@ import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class ShopConfig implements UniversalShopStorage {
 
@@ -168,23 +166,10 @@ public class ShopConfig implements UniversalShopStorage {
 
     public void addItem(ItemStack itemStack, int price, int slot) {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> itemLore;
-
-        if(itemMeta.getLore() != null) {
-            itemLore = itemMeta.getLore();
-        } else {
-            itemLore = new ArrayList<>();
-        }
-
-        itemLore.add(PlayerShops.colorize("&aPrice: &f" + price + "g &aeach"));
-        itemMeta.setLore(itemLore);
-
-        itemStack.setItemMeta(itemMeta);
-
         UUID itemID = UUID.randomUUID();
 
         pConfig.set("player.contents." + itemID + ".itemstack", itemStack);
+        pConfig.set("player.contents." + itemID + ".price", price);
         pConfig.set("player.contents." + itemID + ".slot", slot);
 
         pConfig.save();
@@ -193,6 +178,22 @@ public class ShopConfig implements UniversalShopStorage {
         Player player = Bukkit.getPlayer(this.shopOwner);
         player.sendMessage(PlayerShops.colorize("&aPrice set. Right-Click item to edit."));
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT, 2.0F, 1.0F);
+    }
+    public int getItemPrice(int clickedSlot) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        ConfigurationSection cfg = pConfig.getConfigurationSection("player.contents");
+        Set<String> keys = cfg.getKeys(false);
+        int price = 0;
+
+        for(String key : keys) {
+            int configSlot = pConfig.getInt("player.contents." + key + ".slot");
+            if(clickedSlot == configSlot) {
+                price = pConfig.getInt("player.contents." + key + ".price");
+            }
+        }
+
+        pConfig.discard();
+        return price;
     }
 
     @Override
