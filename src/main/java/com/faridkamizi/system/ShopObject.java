@@ -123,44 +123,6 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
     }
 
     /**
-     * Deletes a shop, along with its physical properties and session-saved config values.
-     * @param uuid
-     *              the shop to be removed.
-     */
-    public static void deleteShop(UUID uuid) {
-        if(shopLocationDirectory.containsKey(uuid)) {
-            ShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
-            ShopConfig shopCfg = shopOfPlayer.shopConfig;
-            List<Location> shopLocation = shopOfPlayer.getShopLocation();
-
-            if(shopLocation.get(4) != null) {
-                AsyncParticles.stopTask(shopLocation.get(4));
-            }
-
-            Hologram.deleteHolo(shopLocation.get(2));
-            Hologram.deleteHolo(shopLocation.get(3));
-
-            shopLocation.get(0).getBlock().setType(Material.AIR);
-            shopLocation.get(1).getBlock().setType(Material.AIR);
-
-            shopCfg.uninitialize();
-
-            shopLocationDirectory.remove(uuid);
-        }
-    }
-
-    /**
-     * Will remove all shops found in {@code PlayerShopStorage} static storage.
-     */
-    public static void closeAllShops() {
-        for(Map.Entry<UUID, ShopObject> playerShopEntry : shopLocationDirectory.entrySet()) {
-            deleteShop(playerShopEntry.getKey());
-        }
-        Hologram.removeAll();
-        shopLocationDirectory.clear();
-    }
-
-    /**
      * Add this shop to the shop directory.
      * @param uuid
      *              the player who owns {@code this} ShopObject.

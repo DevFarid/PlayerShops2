@@ -6,6 +6,7 @@ import com.faridkamizi.currency.Currency;
 import com.faridkamizi.events.PreInputProcess;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
+import com.faridkamizi.system.UniversalShopStorage;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -94,7 +95,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (isOwner) {
 
                             // TO-DO: CLOSE this inventory for whoever that may have it open.
-                            shopObject.deleteShop(this.owner);
+                            UniversalShopStorage.deleteShop(this.owner);
                             player.closeInventory();
                             player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2.0F, 1.0F);
                         }
