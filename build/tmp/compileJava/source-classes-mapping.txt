@@ -26,31 +26,31 @@ com/faridkamizi/events/InputProcessCompletion.java
  com.faridkamizi.events.InputProcessCompletion
 com/faridkamizi/events/enhanced/RequestEvent.java
  com.faridkamizi.events.enhanced.RequestEvent
+com/faridkamizi/events/enhanced/ProcessInputEvent.java
+ com.faridkamizi.events.enhanced.ProcessInputEvent
+com/faridkamizi/PlayerShops.java
+ com.faridkamizi.PlayerShops
+com/faridkamizi/events/enhanced/RequestInputEvent.java
+ com.faridkamizi.events.enhanced.RequestInputEvent
+com/faridkamizi/system/ShopConfig.java
+ com.faridkamizi.system.ShopConfig
 com/faridkamizi/system/ShopObject.java
  com.faridkamizi.system.ShopObject
 com/faridkamizi/inventory/guiListener/ShopListener.java
  com.faridkamizi.inventory.guiListener.ShopListener
 com/faridkamizi/system/UniversalShopStorage.java
  com.faridkamizi.system.UniversalShopStorage
-com/faridkamizi/inventory/gui/ShopSFXInventory.java
- com.faridkamizi.inventory.gui.ShopSFXInventory
-com/faridkamizi/PlayerShops.java
- com.faridkamizi.PlayerShops
-com/faridkamizi/events/PlayerShopUpgrade.java
- com.faridkamizi.events.PlayerShopUpgrade
-com/faridkamizi/events/enhanced/ProcessInputEvent.java
- com.faridkamizi.events.enhanced.ProcessInputEvent
-com/faridkamizi/events/PlayerShopViewEvent.java
- com.faridkamizi.events.PlayerShopViewEvent
-com/faridkamizi/system/ShopConfig.java
- com.faridkamizi.system.ShopConfig
-com/faridkamizi/events/enhanced/RequestInputEvent.java
- com.faridkamizi.events.enhanced.RequestInputEvent
 com/faridkamizi/events/ShopEvent.java
  com.faridkamizi.events.ShopEvent
+com/faridkamizi/inventory/gui/ShopSFXInventory.java
+ com.faridkamizi.inventory.gui.ShopSFXInventory
 com/faridkamizi/system/commands/ShopCMDS.java
  com.faridkamizi.system.commands.ShopCMDS
+com/faridkamizi/events/PlayerShopUpgrade.java
+ com.faridkamizi.events.PlayerShopUpgrade
 com/faridkamizi/currency/Currency.java
  com.faridkamizi.currency.Currency
 com/faridkamizi/inventory/gui/ShopInventory.java
  com.faridkamizi.inventory.gui.ShopInventory
+com/faridkamizi/events/PlayerShopViewEvent.java
+ com.faridkamizi.events.PlayerShopViewEvent

@@ -389,8 +389,15 @@ public class ShopInventory implements ShopInventoryHolder {
      */
     public static void deletePriceTag(ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
-        lore.set(lore.size()-1, "");
+        List<String> lore = null;
+
+        if (itemMeta.getLore() != null) {
+            lore = itemMeta.getLore();
+            lore.remove(lore.size()-1);
+        } else {
+            itemMeta.getLore().clear();
+        }
+        
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
     }
