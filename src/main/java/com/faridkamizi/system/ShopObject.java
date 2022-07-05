@@ -2,7 +2,6 @@ package com.faridkamizi.system;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.inventory.gui.ShopInventory;
-import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,7 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

@@ -44,6 +44,8 @@ public interface UniversalShopStorage {
                 AsyncParticles.stopTask(shopLocation.get(4));
             }
 
+            shopCfg.asyncInventory(uuid);
+
             Hologram.deleteHolo(shopLocation.get(2));
             Hologram.deleteHolo(shopLocation.get(3));
 

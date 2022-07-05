@@ -2,6 +2,7 @@ package com.faridkamizi.system;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
+import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -84,8 +85,20 @@ public class ShopConfig implements UniversalShopStorage {
             pConfig.set("player.shopOpen", true);
         }
         updateHolograms();
+        asyncInventory(shopOwner);
         pConfig.save();
         pConfig.discard();
+    }
+
+    public void asyncInventory(UUID shopOwner) {
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            if(player.getOpenInventory().getTopInventory().getHolder() instanceof ShopInventory) {
+                ShopInventory gui = (ShopInventory) player.getOpenInventory().getTopInventory().getHolder();
+                if(gui.owner.equals(shopOwner)) {
+                    player.closeInventory();
+                }
+            }
+        }
     }
 
     public void upgrade() throws InstantiationException, IllegalAccessException {
