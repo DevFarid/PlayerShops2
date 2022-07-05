@@ -1,9 +1,12 @@
 package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
-import com.faridkamizi.inventory.gui.ShopInventory;
+import com.faridkamizi.currency.Currency;
 import com.faridkamizi.system.ShopObject;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -12,7 +15,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.UUID;
+
 public class ProcessInputEvent extends Event implements Listener {
+
+    public enum InputType {
+        IntegerType, StringType, CUSTOM
+    }
+
     /*
     --------------------------------------------------------------------------------------------------------------------
                                                         EVENT
@@ -79,30 +89,60 @@ public class ProcessInputEvent extends Event implements Listener {
                 player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
             }
         } else if(reqEvt.coEvent instanceof InventoryClickEvent) {
-            if(reqEvt.objects != null) {
+            if((reqEvt.objects != null) && (reqEvt.objects.length > 0)) {
                 Object[] data = reqEvt.objects;
 
-                boolean repriceEvt = (boolean) data[0];
+                if(data[0].equals(InputType.CUSTOM)) {
+                    boolean repriceEvt = (boolean) data[1];
+                    int slot = (int) data[2];
 
-                if(repriceEvt) {
-                    int slot = (int) data[1];
-                    ItemStack itemStack = (ItemStack) data[2];
-
-                    if (isValidPrice(evt.getInput())) {
-                        // reprice the item.
+                    if (repriceEvt) {
+                        if (isValidPrice(evt.getInput())) {
+                            ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().setPrice(slot, Integer.parseInt(evt.getInput()));
+                        } else {
+                            player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                        }
                     } else {
-                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                        ItemStack itemStack = (ItemStack) data[3];
+
+                        if (isValidPrice(evt.getInput())) {
+                            ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
+                        } else {
+                            player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                        }
                     }
-                } else {
+                } else if(data[0].equals(InputType.IntegerType)) {
                     int slot = (int) data[1];
-                    ItemStack itemStack = (ItemStack) data[2];
+                    UUID owner = (UUID) data[2];
+                    int max = ShopObject.shopLocationDirectory.get(owner).getShopConfig().getAmount(slot);
+                    boolean isValidAmount = isValidAmount(evt.getInput(), max);
 
-                    if (isValidPrice(evt.getInput())) {
-                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
+                    ItemStack shopItem = ((InventoryClickEvent) reqEvt.coEvent).getCurrentItem().clone();
+
+                    if(isValidAmount) {
+                        int requestAmount = Integer.parseUnsignedInt(evt.getInput());
+                        int singleItemPrice = ShopObject.shopLocationDirectory.get(owner).getShopConfig().getItemPrice(slot, true);
+                        int totalItemPrice = requestAmount * singleItemPrice;
+                        if (Currency.calculateBalance(player) >= totalItemPrice) {
+                            Currency.remove(player, totalItemPrice);
+                            ShopObject.shopLocationDirectory.get(owner).getShopConfig().process(owner, player.getUniqueId(), slot, requestAmount);
+                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
+                            player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
+
+                            OfflinePlayer player1 = Bukkit.getOfflinePlayer(owner);
+                            if (player1.isOnline()) {
+                                player1.getPlayer().sendMessage(PlayerShops.colorize("&a" + ((InventoryClickEvent)reqEvt.coEvent).getWhoClicked().getName() + " bought " + shopItem.getType().name()));
+                            }
+                        } else {
+                            player.sendMessage(PlayerShops.colorize("&cYou do not have enough gems."));
+                            player.sendMessage(PlayerShops.colorize("&c&lCOST: &c" + totalItemPrice + "&lG"));
+                        }
+
                     } else {
-                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                        player.sendMessage(PlayerShops.colorize("&cNot a valid amount."));
                     }
                 }
+
             } else {
                 if(isValidTitle(evt.getInput())) {
                     ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().updateName(evt.getInput());
@@ -166,5 +206,11 @@ public class ProcessInputEvent extends Event implements Listener {
         }
 
         return (isDigit && isInRange);
+    }
+
+    private static boolean isValidAmount(String message, int maxAmount) {
+        boolean isValidInteger = isValidPrice(message);
+        Integer integer = Integer.parseUnsignedInt(message);
+        return ((isValidInteger) && ((integer < maxAmount)));
     }
 }

@@ -17,10 +17,11 @@ public class RequestEvent {
         this.coEvent = evt;
 
         if(aObj != null) {
-            objects = aObj;
+            if(aObj.length > 0) {
+                objects = aObj;
+            }
         }
     }
-
 
 
 }

@@ -170,6 +170,7 @@ public class ShopConfig implements UniversalShopStorage {
 
         pConfig.set("player.contents." + itemID + ".itemstack", itemStack);
         pConfig.set("player.contents." + itemID + ".price", price);
+        pConfig.set("player.contents." + itemID + ".amount", itemStack.getAmount());
         pConfig.set("player.contents." + itemID + ".slot", slot);
 
         pConfig.save();
@@ -179,21 +180,110 @@ public class ShopConfig implements UniversalShopStorage {
         player.sendMessage(PlayerShops.colorize("&aPrice set. Right-Click item to edit."));
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT, 2.0F, 1.0F);
     }
-    public int getItemPrice(int clickedSlot) {
+
+    public void setPrice(int clickedSlot, int price) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        ConfigurationSection cfg = pConfig.getConfigurationSection("player.contents");
+        Set<String> keys = cfg.getKeys(false);
+
+        for(String key : keys) {
+            int configSlot = pConfig.getInt("player.contents." + key + ".slot");
+            if(clickedSlot == configSlot) {
+                pConfig.set("player.contents." + key + ".price", price);
+            }
+        }
+
+        pConfig.save();
+        pConfig.discard();
+
+        Player player = Bukkit.getPlayer(this.shopOwner);
+        player.sendMessage(PlayerShops.colorize("&aPrice set. Right-Click item to edit."));
+        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT, 2.0F, 1.0F);
+    }
+
+    public int getItemPrice(int clickedSlot, boolean singular) {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         ConfigurationSection cfg = pConfig.getConfigurationSection("player.contents");
         Set<String> keys = cfg.getKeys(false);
         int price = 0;
+        int amount = 0;
 
         for(String key : keys) {
             int configSlot = pConfig.getInt("player.contents." + key + ".slot");
             if(clickedSlot == configSlot) {
                 price = pConfig.getInt("player.contents." + key + ".price");
+                amount = pConfig.getInt("player.contents." + key + ".amount");
+                break;
             }
         }
 
         pConfig.discard();
-        return price;
+        if(singular) {
+            return price;
+        } else {
+            return (price * amount);
+        }
+    }
+
+    public int getAmount(int clickedSlot) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        ConfigurationSection cfg = pConfig.getConfigurationSection("player.contents");
+        Set<String> keys = cfg.getKeys(false);
+        int amount = 0;
+
+        for(String key : keys) {
+            int configSlot = pConfig.getInt("player.contents." + key + ".slot");
+            if(clickedSlot == configSlot) {
+                amount = pConfig.getInt("player.contents." + key + ".amount");
+            }
+        }
+
+        pConfig.discard();
+
+        return amount;
+    }
+
+    /**
+     * Processes the action done by the {@code UUID} player in {@code UUID} owner's shop,
+     * {@code UUID} player can be the {@code UUID} owner, themself, if so remove the item.
+     * If not, then attempt to proceed to purchase the item for x price.
+     */
+    public void process(UUID shopOwner, UUID forPlayer, int slot, int amount) {
+        Player player = Bukkit.getPlayer(forPlayer);
+        PlayerConfig pConfig = PlayerConfig.getConfig(shopOwner);
+        if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
+            Set<String> keys = pConfig.getConfigurationSection("player.contents").getKeys(false);
+            for (String key : keys) {
+                int configSlot = pConfig.getInt("player.contents." + key + ".slot");
+                if (configSlot == slot) {
+                    ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
+                    int configAmount = itemStack.getAmount();
+                    if(amount > 0 && amount <= configAmount) {
+
+                        if (!shopOwner.equals(forPlayer)) {
+                            pConfig.set("player.shopHistory." + key, shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().getItem(slot));
+                        }
+                        shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().setItem(slot, null);
+
+                        player.getInventory().addItem(itemStack);
+
+                        if(amount == configAmount) {
+                            pConfig.set("player.contents." + key, null);
+                        } else {
+                            pConfig.set("player.contents." + key + ".amount", (configAmount-amount));
+                            itemStack.setAmount((configAmount-amount));
+                            shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().setItem(slot, itemStack);
+                        }
+                        break;
+                    }
+                }
+            }
+            pConfig.save();
+            pConfig.discard();
+        } else {
+            player.closeInventory();
+            player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
+        }
     }
 
     @Override

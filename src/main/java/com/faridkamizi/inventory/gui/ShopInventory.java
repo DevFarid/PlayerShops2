@@ -3,6 +3,7 @@ package com.faridkamizi.inventory.gui;
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.ProcessInputEvent;
 import com.faridkamizi.events.RequestEvent;
 import com.faridkamizi.events.RequestInputEvent;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
@@ -57,7 +58,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
                             player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
                             boolean reprice = false;
-                            Object[] objects = {reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
+                            Object[] objects = {ProcessInputEvent.InputType.CUSTOM,reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
 
                             RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
                             RequestInputEvent.request(this.owner, evt);
@@ -94,7 +95,9 @@ public class ShopInventory implements ShopInventoryHolder {
                             player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&invEvt. [max 16 characters]"));
                             player.closeInventory();
 
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, null);
+                            Object[] objects = {};
+
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
                             RequestInputEvent.request(this.owner, evt);
                         }
                     }
@@ -127,29 +130,15 @@ public class ShopInventory implements ShopInventoryHolder {
                     else if (invEvt.getRawSlot() < invEvt.getClickedInventory().getSize() - 9) {
                         if (isOwner) {
                             if (!shopObject.getShopConfig().getStatus()) {
-                                process(this.owner, player.getUniqueId(), invEvt.getRawSlot());
+                                shopObject.getShopConfig().process(this.owner, player.getUniqueId(), invEvt.getRawSlot(), invEvt.getCurrentItem().getAmount());
                             } else {
                                 invEvt.getWhoClicked().closeInventory();
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
-                            ItemStack shopItem = invEvt.getCurrentItem().clone();
-                            int slot = invEvt.getRawSlot();
-                            int itemPrice = shopObject.getShopConfig().getItemPrice(slot);
-                            if (Currency.calculateBalance(player) >= itemPrice) {
-                                Currency.remove(player, itemPrice);
-                                process(this.owner, player.getUniqueId(), slot);
-                                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
-                                player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
-
-                                OfflinePlayer owner = Bukkit.getOfflinePlayer(this.owner);
-                                if (owner.isOnline()) {
-                                    owner.getPlayer().sendMessage(PlayerShops.colorize("&a" + invEvt.getWhoClicked().getName() + " bought " + shopItem.getType().name()));
-                                }
-                            } else {
-                                player.sendMessage(PlayerShops.colorize("&cYou do not have enough gems."));
-                                player.sendMessage(PlayerShops.colorize("&c&lCOST: &c" + itemPrice + "&lG"));
-                            }
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, ProcessInputEvent.InputType.IntegerType, invEvt.getRawSlot(), this.owner);
+                            RequestInputEvent.request(player.getUniqueId(), evt);
+                            player.closeInventory();
                         }
                     }
                 } else if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && !(invEvt.getCursor().getType().isAir())) {
@@ -160,14 +149,20 @@ public class ShopInventory implements ShopInventoryHolder {
             // Reprice shop item.
             invEvt.setCancelled(true);
             if(isOwner) {
-                if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() != null && invEvt.getCursor() == null) {
-                    boolean reprice = true;
-                    Object[] objects = {reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
+                if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && invEvt.getCursor().getType().isAir()) {
+                    if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
+                        boolean reprice = true;
+                        int slot = invEvt.getRawSlot();
+                        ItemStack itemStack = invEvt.getCurrentItem().clone();
+                        Object[] objects = {ProcessInputEvent.InputType.CUSTOM, reprice, slot, itemStack};
 
-                    RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
-                    RequestInputEvent.request(this.owner, evt);
+                        RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
+                        RequestInputEvent.request(this.owner, evt);
 
-                    player.closeInventory();
+                        player.closeInventory();
+                    } else {
+                        player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));
+                    }
                 }
             }
         }
@@ -204,42 +199,6 @@ public class ShopInventory implements ShopInventoryHolder {
 
         for(int i = 1; i < 4; i++) {
             this.inventory.setItem((rowsLvlSize*9-6+i), (ownerShopItems.get(rowsLvlSize*9-6)));
-        }
-    }
-
-    /**
-     * Processes the action done by the {@code UUID} player in {@code UUID} owner's shop,
-     * {@code UUID} player can be the {@code UUID} owner, themself, if so remove the item.
-     * If not, then attempt to proceed to purchase the item for x price.
-     */
-    public void process(UUID shopOwner, UUID forPlayer, int slot) {
-        Player player = Bukkit.getPlayer(forPlayer);
-        PlayerConfig pConfig = PlayerConfig.getConfig(shopOwner);
-        if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
-            Set<String> keys = pConfig.getConfigurationSection("player.contents").getKeys(false);
-            for (String key : keys) {
-                int configSlot = pConfig.getInt("player.contents." + key + ".slot");
-                if (configSlot == slot) {
-                    ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
-
-                    if(!shopOwner.equals(forPlayer)) {
-                        pConfig.set("player.shopHistory."+key, this.inventory.getItem(slot));
-                    }
-                    this.inventory.setItem(slot, null);
-
-                    player.getInventory().addItem(itemStack);
-                    pConfig.set("player.contents." + key, null);
-
-                    // TO-DO: CLOSE this inventory for whoever that may have it open.
-                    this.shopObject.getShopInventory().getInventory().setItem(slot, null);
-                    break;
-                }
-            }
-            pConfig.save();
-            pConfig.discard();
-        } else {
-            player.closeInventory();
-            player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
         }
     }
 
