@@ -4,6 +4,7 @@ import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.ShopObject;
+import com.faridkamizi.system.UniversalShopStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -16,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.Serializable;
 
-public class ShopEvent implements Listener, Serializable {
+public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
 
     /**
      * Manage shop action handling such as creating a shop or retrieve the shop from where it was clicked.
@@ -63,20 +64,6 @@ public class ShopEvent implements Listener, Serializable {
         }
     }
 
-//    /**
-//     * Prepares to create a shop for a player
-//     * @param e
-//     *          the custom even for when a player is about to create a shop.
-//     */
-//    @EventHandler
-//    public void shopCreationEvent(PrePlayerShopCreation e) {
-//        Player p = e.getPlayer();
-//
-//        p.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&e. [max 16 characters]"));
-//        p.playSound(p.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 2F, 1F);
-//        PreInputProcess.requestPlayer(p, e);
-//    }
-
     /**
      * Will open an inventory revealing the contents of the clicked chest that is treated as a shop.
      * @param evt
@@ -86,6 +73,7 @@ public class ShopEvent implements Listener, Serializable {
     public void shopViewEvent(PlayerShopViewEvent evt) {
         Player viewer = evt.getViewer();
         if(evt.getRequestedShop().getShopConfig().getOwnerConfig().getBoolean("player.shopOpen") || evt.getRequestedShop().getShopOwnerID().equals(viewer.getUniqueId())) {
+            evt.getRequestedShop().getShopConfig().addViews(evt.getViewer().getUniqueId());
             viewer.openInventory(evt.getRequestedShop().getShopInventory().getInventory());
             viewer.playSound(viewer.getLocation(), Sound.BLOCK_CHEST_OPEN, 2.0F, 1.0F);
         } else {

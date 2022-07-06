@@ -147,6 +147,29 @@ public class ShopConfig implements UniversalShopStorage {
         updateHolograms();
     }
 
+    public void addViews(UUID uuid) {
+        PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
+        ConfigurationSection pViewCfg = pConfig.getConfigurationSection("player.shopViews");
+        Set<String> keys = pViewCfg.getKeys(false);
+
+        boolean alreadyViewed = false;
+        for(String key : keys) {
+            if(UUID.fromString(pConfig.getString("player.shopViews." + key)).equals(uuid)) {
+                alreadyViewed = true;
+                break;
+            }
+        }
+
+        if(!alreadyViewed) {
+            pConfig.set("player.shopViews." + (keys.size() + 1), uuid.toString());
+        }
+
+        pConfig.save();
+        pConfig.discard();
+
+        updateHolograms();
+    }
+
     public int getViews() {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         int views = 0;
