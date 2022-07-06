@@ -2,7 +2,10 @@ package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.inventory.gui.ShopInventory;
+import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
+import com.faridkamizi.system.UniversalShopStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -19,9 +22,6 @@ import java.util.UUID;
 
 public class ProcessInputEvent extends Event implements Listener {
 
-    public enum InputType {
-        IntegerType, StringType, CUSTOM
-    }
 
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -70,62 +70,52 @@ public class ProcessInputEvent extends Event implements Listener {
     public static void ProcessComplete(ProcessInputEvent evt) {
         RequestEvent reqEvt = evt.getAssociatedEvent();
         Player player = evt.getPlayer();
-        if(reqEvt.coEvent instanceof PrePlayerShopCreation) {
-            if(isValidTitle(evt.getInput())) {
-                Location shopLocation = ((PrePlayerShopCreation) reqEvt.coEvent).getLocation().clone().add(0,1,0);
-                Location shopLocation2 = shopLocation.clone().add(1, 0, 0);
 
-                Location hologramTitle = shopLocation.clone();
-                hologramTitle.add(1, -0.9, 0.5);
+        if(reqEvt.inputType == Input.InputType.StringType) {
 
-                Location hologramView = shopLocation.clone();
-                hologramView.add(1, -1.2, 0.5);
+            if(reqEvt.shopEvent == Input.ShopEvent.SHOP_CREATION || reqEvt.shopEvent == Input.ShopEvent.SHOP_RENAME) {
 
-                Location particleLoc = shopLocation.clone().add(1, 1, 0.5);
-
-                Location[] locs = {shopLocation, shopLocation2, hologramTitle, hologramView, particleLoc};
-                ShopObject shopObject = new ShopObject(player.getUniqueId(), evt.getInput(), locs);
-            } else {
-                player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
-            }
-        } else if(reqEvt.coEvent instanceof InventoryClickEvent) {
-            if((reqEvt.objects != null) && (reqEvt.objects.length > 0)) {
-                Object[] data = reqEvt.objects;
-
-                if(data[0].equals(InputType.CUSTOM)) {
-                    boolean repriceEvt = (boolean) data[1];
-                    int slot = (int) data[2];
-
-                    if (repriceEvt) {
-                        if (isValidPrice(evt.getInput())) {
-                            ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().setPrice(slot, Integer.parseInt(evt.getInput()));
-                        } else {
-                            player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
-                        }
-                    } else {
-                        ItemStack itemStack = (ItemStack) data[3];
-
-                        if (isValidPrice(evt.getInput())) {
-                            ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(itemStack, Integer.parseInt(evt.getInput()), slot);
-                        } else {
-                            player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
-                        }
+                if (isValidTitle(evt.getInput())) {
+                    if (reqEvt.coEvent instanceof PrePlayerShopCreation) {
+                        Location shopLocationCreation = ((PrePlayerShopCreation) reqEvt.coEvent).getLocation();
+                        UniversalShopStorage.create(player.getUniqueId(), shopLocationCreation.clone(), evt.getInput());
+                    } else if (reqEvt.coEvent instanceof InventoryClickEvent) {
+                        UniversalShopStorage.get(reqEvt.requestOwnerID).getShopConfig().updateName(evt.getInput());
                     }
-                } else if(data[0].equals(InputType.IntegerType)) {
-                    int slot = (int) data[1];
-                    UUID owner = (UUID) data[2];
-                    int max = ShopObject.shopLocationDirectory.get(owner).getShopConfig().getAmount(slot);
-                    boolean isValidAmount = isValidAmount(evt.getInput(), max);
+                } else {
+                    player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
+                }
 
+            }
+        }
+        else if(reqEvt.inputType == Input.InputType.IntegerType) {
+            if(reqEvt.coEvent instanceof InventoryClickEvent) {
+                if (reqEvt.shopEvent == Input.ShopEvent.OWNER_ADD_ITEM) {
+                    ItemStack aItem = (ItemStack) reqEvt.objects[0];
+                    int slot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();
+                    if (isValidPrice(evt.getInput())) {
+                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(aItem, Integer.parseInt(evt.getInput()), slot);
+                    } else {
+                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                    }
+                } else if(reqEvt.shopEvent == Input.ShopEvent.PLAYER_BUY_EVENT) {
+                    int clickedSlot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();
                     ItemStack shopItem = ((InventoryClickEvent) reqEvt.coEvent).getCurrentItem().clone();
+                    ShopInventory gui = (ShopInventory) ((InventoryClickEvent) reqEvt.coEvent).getInventory().getHolder();
+                    ShopObject shopObject = gui.getShopObject();
+                    UUID owner = gui.owner;
+
+
+                    int max = shopObject.getShopConfig().getAmount(clickedSlot);
+                    boolean isValidAmount = isValidAmount(evt.getInput(), max);
 
                     if(isValidAmount) {
                         int requestAmount = Integer.parseUnsignedInt(evt.getInput());
-                        int singleItemPrice = ShopObject.shopLocationDirectory.get(owner).getShopConfig().getItemPrice(slot, true);
-                        int totalItemPrice = requestAmount * singleItemPrice;
-                        if (Currency.calculateBalance(player) >= totalItemPrice) {
-                            Currency.remove(player, totalItemPrice);
-                            ShopObject.shopLocationDirectory.get(owner).getShopConfig().process(owner, player.getUniqueId(), slot, requestAmount);
+                        int singleItemCost = shopObject.getShopConfig().getItemPrice(clickedSlot, true);
+                        int totalCost = requestAmount * singleItemCost;
+                        if(Currency.calculateBalance(player) >= totalCost) {
+                            Currency.remove(player, totalCost);
+                            shopObject.getShopConfig().process(owner, player.getUniqueId(), clickedSlot, requestAmount);
                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
                             player.sendMessage(PlayerShops.colorize("&aYou bough an item!"));
 
@@ -135,23 +125,18 @@ public class ProcessInputEvent extends Event implements Listener {
                             }
                         } else {
                             player.sendMessage(PlayerShops.colorize("&cYou do not have enough gems."));
-                            player.sendMessage(PlayerShops.colorize("&c&lCOST: &c" + totalItemPrice + "&lG"));
+                            player.sendMessage(PlayerShops.colorize("&c&lCOST: &c" + totalCost + "&lG"));
                         }
-
-                    } else {
-                        player.sendMessage(PlayerShops.colorize("&cNot a valid amount."));
+                    } else { player.sendMessage(PlayerShops.colorize("&cNot a valid amount.")); }
+                } else if(reqEvt.shopEvent == Input.ShopEvent.OWNER_MODIFY_PRICE) {
+                    if(isValidPrice(evt.getInput())) {
+                        int clickedSlot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();
+                        ShopInventory gui = (ShopInventory) ((InventoryClickEvent) reqEvt.coEvent).getInventory().getHolder();
+                        gui.getShopObject().getShopConfig().setPrice(clickedSlot, Integer.parseUnsignedInt(evt.getInput()));
                     }
                 }
-
-            } else {
-                if(isValidTitle(evt.getInput())) {
-                    ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().updateName(evt.getInput());
-                } else {
-                    player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));
-                }
             }
-        }
-
+        } else if(reqEvt.inputType == Input.InputType.CUSTOM) {}
     }
 
     /*

@@ -1,5 +1,6 @@
 package com.faridkamizi.system;
 
+import com.faridkamizi.PlayerShops;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.Bukkit;
@@ -29,6 +30,29 @@ public interface UniversalShopStorage {
         return shopLocationDirectory.get(uuid);
     }
 
+    public static void create(UUID uuid, Location copyClickedBlock, String name) {
+        Location shopLocation = copyClickedBlock.clone().add(0,1,0);
+        Location shopLocation2 = shopLocation.clone().add(1, 0, 0);
+
+        Location hologramTitle = shopLocation.clone();
+        hologramTitle.add(1, -0.9, 0.5);
+
+        Location hologramView = shopLocation.clone();
+        hologramView.add(1, -1.2, 0.5);
+
+        Location particleLoc = shopLocation.clone().add(1, 1, 0.5);
+
+        Location[] locs = {shopLocation, shopLocation2, hologramTitle, hologramView, particleLoc};
+
+        if(!shopLocationDirectory.containsKey(uuid)) {
+            ShopObject shopObject = new ShopObject(uuid, name, locs);
+            shopLocationDirectory.put(uuid, shopObject);
+        } else {
+            Player player = Bukkit.getPlayer(uuid);
+            player.sendMessage(PlayerShops.colorize("&eYou already have a shop on &lUS-1&e!"));
+        }
+    }
+
     /**
      * Add this shop to the shop directory.
      * @param uuid
@@ -47,7 +71,7 @@ public interface UniversalShopStorage {
      * @param uuid
      *              the shop to be removed.
      */
-    public static void deleteShop(UUID uuid) {
+    public static void deleteShop(UUID uuid, boolean remove) {
         if(shopLocationDirectory.containsKey(uuid)) {
             ShopObject shopOfPlayer = shopLocationDirectory.get(uuid);
             ShopConfig shopCfg = shopOfPlayer.getShopConfig();
@@ -68,7 +92,9 @@ public interface UniversalShopStorage {
 
             shopCfg.uninitialize();
 
-            shopLocationDirectory.remove(uuid);
+            if(remove) {
+                shopLocationDirectory.remove(uuid);
+            }
         }
     }
 
@@ -76,11 +102,8 @@ public interface UniversalShopStorage {
      * Will remove all shops found in {@code PlayerShopStorage} static storage.
      */
     public static void closeAllShops() {
-        for(Player player : Bukkit.getOnlinePlayers()) {
-            if(shopLocationDirectory.get(player.getUniqueId()) != null) {
-                deleteShop(player.getUniqueId());
-            }
-            Hologram.removeAll();
+        for(Map.Entry<UUID, ShopObject> entry : shopLocationDirectory.entrySet()) {
+            deleteShop(entry.getKey(), false);
         }
         Hologram.removeAll();
         shopLocationDirectory.clear();

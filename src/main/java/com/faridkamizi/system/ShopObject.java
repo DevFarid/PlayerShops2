@@ -38,37 +38,33 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
 
         this.shopInventory = new ShopInventory(this.shopOwner, shopSize, this);
         this.createPhysicalProperties();
-
-        UniversalShopStorage.add(shopOwner, this);
     }
 
     /**
      * Create physical representation in the world using the locations associated with the shop.
      */
     private void createPhysicalProperties() {
-        if(!shopLocationDirectory.containsKey(this.shopOwner)) {
-            Player player = Bukkit.getPlayer(this.shopOwner);
+        Player player = Bukkit.getPlayer(this.shopOwner);
 
-            Block block1 = getShopLocation().get(0).clone().getBlock();
-            Block block2 = getShopLocation().get(1).clone().getBlock();
+        Block block1 = getShopLocation().get(0).clone().getBlock();
+        Block block2 = getShopLocation().get(1).clone().getBlock();
 
-            Hologram.createHolo(PlayerShops.colorize("&c"+shopName), getShopLocation().get(2));
-            Hologram.createHolo(PlayerShops.colorize("&f1 &cview(s)"), getShopLocation().get(3));
+        Hologram.createHolo(PlayerShops.colorize("&c"+shopName), getShopLocation().get(2));
+        Hologram.createHolo(PlayerShops.colorize("&f1 &cview(s)"), getShopLocation().get(3));
 
-            block1.setType(Material.CHEST);
-            block2.setType(Material.CHEST);
+        block1.setType(Material.CHEST);
+        block2.setType(Material.CHEST);
 
-            org.bukkit.block.data.type.Chest chestBlockState1 = (org.bukkit.block.data.type.Chest) block1.getBlockData();
-            chestBlockState1.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
-            block1.setBlockData(chestBlockState1, true);
+        org.bukkit.block.data.type.Chest chestBlockState1 = (org.bukkit.block.data.type.Chest) block1.getBlockData();
+        chestBlockState1.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
+        block1.setBlockData(chestBlockState1, true);
 
-            org.bukkit.block.data.type.Chest chestBlockState2 = (org.bukkit.block.data.type.Chest) block2.getBlockData();
-            chestBlockState2.setType(Chest.Type.RIGHT);
-            block2.setBlockData(chestBlockState2, true);
+        org.bukkit.block.data.type.Chest chestBlockState2 = (org.bukkit.block.data.type.Chest) block2.getBlockData();
+        chestBlockState2.setType(Chest.Type.RIGHT);
+        block2.setBlockData(chestBlockState2, true);
 
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
-            player.sendMessage(PlayerShops.colorize("\n&e&lYOU'VE CREATED A SHOP!\n&eTo stock your shop, simply drag items into your shop's inventory."));
-        }
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
+        player.sendMessage(PlayerShops.colorize("\n&e&lYOU'VE CREATED A SHOP!\n&eTo stock your shop, simply drag items into your shop's inventory."));
     }
 
     /**

@@ -34,7 +34,7 @@ public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
 
                 PrePlayerShopCreation shopCreationEvent = new PrePlayerShopCreation(player, e.getClickedBlock().getLocation());
 
-                RequestEvent evt = new RequestEvent(player.getUniqueId(), shopCreationEvent, (Object)null);
+                RequestEvent evt = new RequestEvent(player.getUniqueId(), shopCreationEvent, Input.InputType.StringType, Input.ShopEvent.SHOP_CREATION);
                 player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r. [max 16 characters]"));
                 RequestInputEvent.request(player.getUniqueId(), evt);
 

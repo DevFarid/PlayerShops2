@@ -2,14 +2,16 @@ package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
-import com.faridkamizi.currency.Currency;
-import com.faridkamizi.events.ProcessInputEvent;
+import com.faridkamizi.events.Input;
 import com.faridkamizi.events.RequestEvent;
 import com.faridkamizi.events.RequestInputEvent;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -27,6 +29,11 @@ public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
     private final Inventory inventory;
+
+    public ShopObject getShopObject() {
+        return this.shopObject;
+    }
+
     private final ShopObject shopObject;
     /*
     --------------------------------------------------------------------------------------------------------------------
@@ -57,10 +64,8 @@ public class ShopInventory implements ShopInventoryHolder {
                     if (isOwner) {
                         if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
                             player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
-                            boolean reprice = false;
-                            Object[] objects = {ProcessInputEvent.InputType.CUSTOM,reprice, invEvt.getRawSlot(), invEvt.getCursor().clone()};
 
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, Input.InputType.IntegerType, Input.ShopEvent.OWNER_ADD_ITEM);
                             RequestInputEvent.request(this.owner, evt);
 
                             invEvt.getWhoClicked().setItemOnCursor(null);
@@ -94,10 +99,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         if (isOwner) {
                             player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r. [max 16 characters]"));
                             player.closeInventory();
-
-                            Object[] objects = {};
-
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
+                            RequestEvent evt = new RequestEvent(this.owner, invEvt, Input.InputType.StringType, Input.ShopEvent.SHOP_RENAME);
                             RequestInputEvent.request(this.owner, evt);
                         }
                     }
@@ -105,7 +107,7 @@ public class ShopInventory implements ShopInventoryHolder {
                     else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 2) {
                         if (isOwner) {
                             // TO-DO: CLOSE this inventory for whoever that may have it open.
-                            UniversalShopStorage.deleteShop(this.owner);
+                            UniversalShopStorage.deleteShop(this.owner, true);
                             player.closeInventory();
                             player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2.0F, 1.0F);
                         }
@@ -142,7 +144,7 @@ public class ShopInventory implements ShopInventoryHolder {
 
                             player.sendMessage(PlayerShops.colorize("&7MAX: " +  clickedItem.getAmount() + "X (" + cMaxItemPrice + "g), OR "+ cSingleItemPrice +"g/each."));
 
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, ProcessInputEvent.InputType.IntegerType, invEvt.getRawSlot(), this.owner);
+                            RequestEvent evt = new RequestEvent(player.getUniqueId(), invEvt, Input.InputType.IntegerType, Input.ShopEvent.PLAYER_BUY_EVENT);
                             RequestInputEvent.request(player.getUniqueId(), evt);
                             player.closeInventory();
                         }
@@ -157,14 +159,8 @@ public class ShopInventory implements ShopInventoryHolder {
             if(isOwner) {
                 if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && invEvt.getCursor().getType().isAir()) {
                     if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
-                        boolean reprice = true;
-                        int slot = invEvt.getRawSlot();
-                        ItemStack itemStack = invEvt.getCurrentItem().clone();
-                        Object[] objects = {ProcessInputEvent.InputType.CUSTOM, reprice, slot, itemStack};
-
-                        RequestEvent evt = new RequestEvent(this.owner, invEvt, objects);
+                        RequestEvent evt = new RequestEvent(this.owner, invEvt, Input.InputType.IntegerType, Input.ShopEvent.OWNER_MODIFY_PRICE);
                         RequestInputEvent.request(this.owner, evt);
-
                         player.closeInventory();
                     } else {
                         player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));

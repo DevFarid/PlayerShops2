@@ -44,10 +44,10 @@ public class PlayerShops extends JavaPlugin {
     @Override
     public void onDisable() {
         super.onDisable();
+        UniversalShopStorage.closeAllShops();
         PlayerConfig.removeConfigs();
         Hologram.removeAll();
         AsyncParticles.stopAllTasks();
-        UniversalShopStorage.closeAllShops();
         this.getServer().getConsoleSender().sendMessage(ChatColor.RED + "PlayerShops disabled");
     }
 
