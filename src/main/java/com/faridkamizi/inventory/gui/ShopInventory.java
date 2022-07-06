@@ -92,7 +92,7 @@ public class ShopInventory implements ShopInventoryHolder {
                     // Rename shop function.
                     else if (invEvt.getRawSlot() == invEvt.getClickedInventory().getSize() - 7) {
                         if (isOwner) {
-                            player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r&invEvt. [max 16 characters]"));
+                            player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r. [max 16 characters]"));
                             player.closeInventory();
 
                             Object[] objects = {};
@@ -136,6 +136,12 @@ public class ShopInventory implements ShopInventoryHolder {
                                 player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
                             }
                         } else {
+                            ItemStack clickedItem = invEvt.getCurrentItem().clone();
+                            int cMaxItemPrice = shopObject.getShopConfig().getItemPrice(invEvt.getRawSlot(), false);
+                            int cSingleItemPrice = shopObject.getShopConfig().getItemPrice(invEvt.getRawSlot(), true);
+
+                            player.sendMessage(PlayerShops.colorize("&7MAX: " +  clickedItem.getAmount() + "X (" + cMaxItemPrice + "g), OR "+ cSingleItemPrice +"g/each."));
+
                             RequestEvent evt = new RequestEvent(this.owner, invEvt, ProcessInputEvent.InputType.IntegerType, invEvt.getRawSlot(), this.owner);
                             RequestInputEvent.request(player.getUniqueId(), evt);
                             player.closeInventory();
@@ -222,22 +228,28 @@ public class ShopInventory implements ShopInventoryHolder {
         if(pConfig.contains("player.contents")) {
             Set<String> keys = cfg.getKeys(false);
             for (String key : keys) {
-                ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
+                ItemStack configItem = pConfig.getItemStack("player.contents." + key + ".itemstack");
                 int slot = pConfig.getInt("player.contents." + key + ".slot");
                 int price = pConfig.getInt("player.contents." + key + ".price");
 
-                // Display price tag
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                List<String> lore;
+                ItemStack displayItem = configItem.clone();
+                ItemMeta displayMeta = displayItem.getItemMeta();
 
-                if(itemMeta.getLore() != null) { lore = itemMeta.getLore(); }
-                else { lore = new ArrayList<>(); }
-                lore.add(0, PlayerShops.colorize("&aPrice: &f" + price + "g &aeach"));
+                List<String> lore = new ArrayList<>();
 
-                itemMeta.setLore(lore);
-                itemStack.setItemMeta(itemMeta);
+                if(displayMeta.getLore() != null && displayMeta.getLore().size() > 0) {
+                    if(displayMeta.getLore().get(0) != "") {
+                        lore.addAll(displayMeta.getLore());
+                        lore.set(lore.size(), PlayerShops.colorize("&aPrice: &f"+ price +"g &aeach"));
+                    }
+                } else {
+                    lore.add(0, PlayerShops.colorize("&aPrice: &f"+ price +"g &aeach"));
+                    displayMeta.setLore(lore);
+                }
 
-                ownerItems.put(slot, itemStack);
+                displayItem.setItemMeta(displayMeta);
+
+                ownerItems.put(slot, displayItem);
             }
         }
         pConfig.discard();

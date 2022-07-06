@@ -23,7 +23,6 @@ public class RequestInputEvent implements Listener {
         if(!requestPlayers.containsKey(uuid)) {
             requestPlayers.put(uuid, evt);
             Player player = Bukkit.getPlayer(uuid);
-            player.sendMessage(PlayerShops.colorize("&ePlease enter a &l"+ evt.coEvent.getEventName() +"&r&e. [max 16 characters]"));
             player.playSound(player.getLocation(), Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, 2F, 1F);
         }
     }

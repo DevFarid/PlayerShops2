@@ -33,8 +33,6 @@ public class PlayerShops extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new Hologram(), this);
         this.getServer().getPluginManager().registerEvents(new ShopEvent(), this);
         this.getServer().getPluginManager().registerEvents(new ShopListener(), this);
-//        this.getServer().getPluginManager().registerEvents(new PreInputProcess(), this);
-//        this.getServer().getPluginManager().registerEvents(new InputProcessCompletion(), this);
 
         this.getServer().getPluginManager().registerEvents(new RequestInputEvent(), this);
         this.getServer().getPluginManager().registerEvents(new ProcessInputEvent(), this);

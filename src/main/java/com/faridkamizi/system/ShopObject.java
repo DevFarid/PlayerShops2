@@ -39,7 +39,7 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
         this.shopInventory = new ShopInventory(this.shopOwner, shopSize, this);
         this.createPhysicalProperties();
 
-        add(shopOwner, this);
+        UniversalShopStorage.add(shopOwner, this);
     }
 
     /**
@@ -120,17 +120,6 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
         return shopObject;
     }
 
-    /**
-     * Add this shop to the shop directory.
-     * @param uuid
-     *              the player who owns {@code this} ShopObject.
-     * @param shopObject
-     *                  The shop object that was just created, a.k.a {@code this}.
-     */
-    @Override
-    public void add(UUID uuid, ShopObject shopObject) {
-        if(!shopLocationDirectory.containsKey(uuid)) {
-            shopLocationDirectory.put(uuid, shopObject);
-        }
-    }
+
+
 }

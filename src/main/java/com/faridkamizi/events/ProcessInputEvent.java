@@ -211,6 +211,6 @@ public class ProcessInputEvent extends Event implements Listener {
     private static boolean isValidAmount(String message, int maxAmount) {
         boolean isValidInteger = isValidPrice(message);
         Integer integer = Integer.parseUnsignedInt(message);
-        return ((isValidInteger) && ((integer < maxAmount)));
+        return ((isValidInteger) && ((integer <= maxAmount)));
     }
 }

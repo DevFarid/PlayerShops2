@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -243,53 +244,46 @@ public class ShopConfig implements UniversalShopStorage {
         return amount;
     }
 
-    /**
-     * Processes the action done by the {@code UUID} player in {@code UUID} owner's shop,
-     * {@code UUID} player can be the {@code UUID} owner, themself, if so remove the item.
-     * If not, then attempt to proceed to purchase the item for x price.
-     */
-    public void process(UUID shopOwner, UUID forPlayer, int slot, int amount) {
-        Player player = Bukkit.getPlayer(forPlayer);
+    public void process(UUID owner, UUID shopPlayer, int slot, int requestedAmount) {
+        Player player = Bukkit.getPlayer(shopPlayer);
         PlayerConfig pConfig = PlayerConfig.getConfig(shopOwner);
-        if (pConfig.contains("player.contents") && (pConfig.getConfigurationSection("player.contents").getKeys(false).size() > 0)) {
-            Set<String> keys = pConfig.getConfigurationSection("player.contents").getKeys(false);
-            for (String key : keys) {
-                int configSlot = pConfig.getInt("player.contents." + key + ".slot");
-                if (configSlot == slot) {
-                    ItemStack itemStack = pConfig.getItemStack("player.contents." + key + ".itemstack");
-                    int configAmount = itemStack.getAmount();
-                    if(amount > 0 && amount <= configAmount) {
+        ConfigurationSection itemCfg = pConfig.getConfigurationSection("player.contents");
+        Set<String> keys = itemCfg.getKeys(false);
 
-                        if (!shopOwner.equals(forPlayer)) {
-                            pConfig.set("player.shopHistory." + key, shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().getItem(slot));
-                        }
-                        shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().setItem(slot, null);
+        for(String key : keys) {
+            int cfgSlot = pConfig.getInt("player.contents." + key + ".slot");
+            if(cfgSlot == slot) {
+                int cfgAmount = pConfig.getInt("player.contents." + key + ".amount");
+                int cfgDifference = cfgAmount - requestedAmount;
 
-                        player.getInventory().addItem(itemStack);
+                if(requestedAmount > 0 && requestedAmount <= cfgAmount) {
+                    ItemStack rqstedItem = pConfig.getItemStack("player.contents." + key + ".itemstack").clone();
+                    rqstedItem.setAmount(requestedAmount);
+                    player.getInventory().addItem(rqstedItem);
 
-                        if(amount == configAmount) {
-                            pConfig.set("player.contents." + key, null);
-                        } else {
-                            pConfig.set("player.contents." + key + ".amount", (configAmount-amount));
-                            itemStack.setAmount((configAmount-amount));
-                            shopLocationDirectory.get(shopOwner).getShopInventory().getInventory().setItem(slot, itemStack);
-                        }
-                        break;
+                    if (!shopOwner.equals(player)) {
+                        pConfig.set("player.shopHistory." + key, rqstedItem);
                     }
                 }
-            }
-            pConfig.save();
-            pConfig.discard();
-        } else {
-            player.closeInventory();
-            player.sendMessage(PlayerShops.colorize("&cYou must close your shop to remove an item first."));
-        }
-    }
+                if(cfgDifference == 0) {
+                    pConfig.set("player.contents." + key, null);
+                    shopLocationDirectory.get(owner).getShopInventory().getInventory().setItem(slot, null);
+                } else {
+                    pConfig.set("player.contents." + key + ".amount", cfgDifference);
 
-    @Override
-    public void add(UUID uuid, ShopObject shopObject) {
-        if(!shopLocationDirectory.containsKey(uuid)) {
-            shopLocationDirectory.put(uuid, shopObject);
+                    ItemStack cfgItem = pConfig.getItemStack("player.contents." + key + ".itemstack");
+                    cfgItem.setAmount(cfgDifference);
+
+                    pConfig.set("player.contents." + key + ".itemstack", cfgItem);
+                    shopLocationDirectory.get(owner).getShopInventory().getInventory().setItem(slot, cfgItem.clone());
+                }
+            }
         }
+
+
+
+        pConfig.save();
+        pConfig.discard();
+
     }
 }
