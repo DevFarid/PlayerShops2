@@ -11,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
@@ -285,7 +286,9 @@ public class ShopConfig implements UniversalShopStorage {
                     player.getInventory().addItem(rqstedItem);
 
                     if (!shopOwner.equals(player)) {
-                        pConfig.set("player.shopHistory." + key, rqstedItem);
+                        int price = requestedAmount * getItemPrice(slot, true);
+                        ItemStack itemHistory = addPriceTag(rqstedItem.clone(), price);
+                        pConfig.set("player.shopHistory." + key, itemHistory);
                     }
                 }
                 if(cfgDifference == 0) {
@@ -302,11 +305,21 @@ public class ShopConfig implements UniversalShopStorage {
                 }
             }
         }
-
-
-
         pConfig.save();
         pConfig.discard();
-
     }
+
+    public ItemStack addPriceTag(ItemStack itemHistory, int price) {
+        ItemMeta historyMeta = itemHistory.getItemMeta();
+        List<String> lore = new ArrayList<>();
+
+        if(historyMeta != null && historyMeta.getLore() != null) {
+            lore.addAll(historyMeta.getLore());
+        }
+        lore.add(lore.size(), PlayerShops.colorize("&aSold for &f&l" + price + "g."));
+        historyMeta.setLore(lore);
+        itemHistory.setItemMeta(historyMeta);
+        return itemHistory;
+    }
+
 }

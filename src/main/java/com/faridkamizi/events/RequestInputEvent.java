@@ -1,6 +1,5 @@
 package com.faridkamizi.events;
 
-import com.faridkamizi.PlayerShops;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
