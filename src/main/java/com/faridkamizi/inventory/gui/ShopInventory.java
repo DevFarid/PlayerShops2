@@ -25,7 +25,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.*;
 
 
-public class ShopInventory implements ShopInventoryHolder {
+public class ShopInventory implements ShopInventoryHolder, UniversalShopStorage {
 
     public UUID owner;
     private Inventory inventory;
@@ -196,7 +196,10 @@ public class ShopInventory implements ShopInventoryHolder {
         this.inventory.clear();
         int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
 
-        this.inventory = Bukkit.createInventory(this, (rowsLvlSize*9), this.inventoryName);
+        if( (9*rowsLvlSize) > this.inventory.getSize() ) {
+            this.inventory = Bukkit.createInventory(this, (rowsLvlSize*9), this.inventoryName);
+            shopLocationDirectory.get(this.owner).setShopInventory(this);
+        }
 
         Map<Integer, ItemStack> ownerShopItems = getOwnerContents(owner);
         ownerShopItems.putAll(getShopMenuItems(owner, rowsLvlSize));
