@@ -28,7 +28,8 @@ import java.util.*;
 public class ShopInventory implements ShopInventoryHolder {
 
     public UUID owner;
-    private final Inventory inventory;
+    private Inventory inventory;
+    private String inventoryName;
 
     public ShopObject getShopObject() {
         return this.shopObject;
@@ -42,6 +43,7 @@ public class ShopInventory implements ShopInventoryHolder {
      */
     public ShopInventory(UUID shopOwner, int inventorySize, ShopObject shopObjectHolder) {
         String name = Bukkit.getOfflinePlayer(shopOwner).getName()+ "'s Shop";
+        this.inventoryName = name;
         this.owner = shopOwner;
         this.inventory = Bukkit.createInventory(this, inventorySize, name);
         this.shopObject = shopObjectHolder;
@@ -193,6 +195,8 @@ public class ShopInventory implements ShopInventoryHolder {
     private void setUp() {
         this.inventory.clear();
         int rowsLvlSize = 1 + shopObject.getShopConfig().getShopTier();
+
+        this.inventory = Bukkit.createInventory(this, (rowsLvlSize*9), this.inventoryName);
 
         Map<Integer, ItemStack> ownerShopItems = getOwnerContents(owner);
         ownerShopItems.putAll(getShopMenuItems(owner, rowsLvlSize));

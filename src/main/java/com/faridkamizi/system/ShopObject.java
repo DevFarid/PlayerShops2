@@ -18,7 +18,7 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
     private final UUID shopOwner;
     private final String shopName;
     private ShopConfig shopConfig;
-    private final ShopInventory shopInventory;
+    private ShopInventory shopInventory;
 
     /**
      * Constructor for when a shop is to be created.
@@ -87,6 +87,10 @@ public class ShopObject extends ShopLocation implements UniversalShopStorage {
 
     public void setShopConfig(ShopConfig newConfig) {
         this.shopConfig = newConfig;
+    }
+
+    public void setShopInventory(ShopInventory shopInventory) {
+        this.shopInventory = shopInventory;
     }
 
     /**

@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
-public class ProcessInputEvent extends Event implements Listener {
+public class ProcessInputEvent extends Event implements Listener, UniversalShopStorage {
 
 
     /*
@@ -77,7 +77,9 @@ public class ProcessInputEvent extends Event implements Listener {
                         Location shopLocationCreation = ((PlayerShopCreationEvent) reqEvt.coEvent).getLocation();
                         UniversalShopStorage.create(player.getUniqueId(), shopLocationCreation.clone(), evt.getInput());
                     } else if (reqEvt.coEvent instanceof InventoryClickEvent) {
-                        UniversalShopStorage.get(reqEvt.requestOwnerID).getShopConfig().updateName(evt.getInput());
+                        if(shopLocationDirectory.containsKey(reqEvt.requestOwnerID)) {
+                            shopLocationDirectory.get(reqEvt.requestOwnerID).getShopConfig().updateName(evt.getInput());
+                        }
                     }
                 } else {
                     player.sendMessage(PlayerShops.colorize("&cA shop name may only contain a letter or a digit with max limit of 16 characters."));

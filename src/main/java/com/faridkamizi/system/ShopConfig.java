@@ -104,39 +104,31 @@ public class ShopConfig implements UniversalShopStorage {
     public void upgrade() throws InstantiationException, IllegalAccessException {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         int currentLevel = getShopTier();
-        pConfig.set("player.shopTier", (currentLevel + 1));
-        pConfig.save();
-
+        int nextLevel = currentLevel + 1;
         Player player = Bukkit.getPlayer(shopOwner);
-        player.sendMessage(PlayerShops.colorize("&a&l*** SHOP UPGRADE TO LEVEL " + (currentLevel+1) + " COMPLETE ***"));
+        player.sendMessage(PlayerShops.colorize("&a&l*** SHOP UPGRADE TO LEVEL " + (nextLevel) + " COMPLETE ***"));
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0F, 1.0F);
+        pConfig.set("player.shopTier", nextLevel);
 
-        ShopObject shopObject = shopLocationDirectory.get(this.shopOwner);
-
-        List<Location> locationList = shopObject.getShopLocation();
-        Location[] arrayLocation = new Location[]{locationList.get(0), locationList.get(1), locationList.get(2), locationList.get(3), locationList.get(4)};
-
-
-        ShopObject newInstance = new ShopObject(this.shopOwner, this.name, arrayLocation);
         pConfig.save();
         pConfig.discard();
 
-        ShopConfig newConfig = new ShopConfig(this.shopOwner, this.name, locationList);
-        shopObject.setShopConfig(newConfig);
-
-        shopLocationDirectory.remove(this.shopOwner);
-        shopLocationDirectory.put(this.shopOwner, newInstance);
+        ShopObject shopObject = shopLocationDirectory.get(this.shopOwner);
+        ShopInventory shopInventory = new ShopInventory(this.shopOwner, nextLevel, shopObject);
+        shopObject.setShopInventory(shopInventory);
     }
 
     public boolean getStatus() {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         boolean isOpen = pConfig.getBoolean("player.shopOpen");
+        pConfig.discard();
         return isOpen;
     }
 
     public int getShopTier() {
         PlayerConfig pConfig = PlayerConfig.getConfig(this.shopOwner);
         int shopTier = pConfig.getInt("player.shopTier");
+        pConfig.discard();
         return shopTier;
     }
 
