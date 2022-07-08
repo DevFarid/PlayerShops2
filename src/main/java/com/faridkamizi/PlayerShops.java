@@ -1,12 +1,12 @@
 package com.faridkamizi;
 
 import com.faridkamizi.config.PlayerConfig;
-import com.faridkamizi.events.ProcessInputEvent;
-import com.faridkamizi.events.RequestInputEvent;
+import com.faridkamizi.events.input.ProcessInputEvent;
+import com.faridkamizi.events.input.RequestInputEvent;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.UniversalShopStorage;
 import com.faridkamizi.system.commands.ShopCMDS;
-import com.faridkamizi.events.ShopEvent;
+import com.faridkamizi.events.ShopEventRedirectors;
 import com.faridkamizi.util.AsyncParticles;
 import com.faridkamizi.util.Hologram;
 import org.bukkit.ChatColor;
@@ -31,7 +31,7 @@ public class PlayerShops extends JavaPlugin {
 
         this.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "PlayerShops enabled");
         this.getServer().getPluginManager().registerEvents(new Hologram(), this);
-        this.getServer().getPluginManager().registerEvents(new ShopEvent(), this);
+        this.getServer().getPluginManager().registerEvents(new ShopEventRedirectors(), this);
         this.getServer().getPluginManager().registerEvents(new ShopListener(), this);
 
         this.getServer().getPluginManager().registerEvents(new RequestInputEvent(), this);

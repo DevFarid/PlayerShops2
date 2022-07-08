@@ -2,9 +2,9 @@ package com.faridkamizi.inventory.gui;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.config.PlayerConfig;
-import com.faridkamizi.events.Input;
-import com.faridkamizi.events.RequestEvent;
-import com.faridkamizi.events.RequestInputEvent;
+import com.faridkamizi.events.input.Input;
+import com.faridkamizi.events.input.RequestEvent;
+import com.faridkamizi.events.input.RequestInputEvent;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;

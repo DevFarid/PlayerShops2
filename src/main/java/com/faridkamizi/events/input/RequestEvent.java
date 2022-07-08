@@ -1,4 +1,4 @@
-package com.faridkamizi.events;
+package com.faridkamizi.events.input;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;

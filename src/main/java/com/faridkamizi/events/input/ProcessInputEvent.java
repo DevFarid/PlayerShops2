@@ -1,9 +1,9 @@
-package com.faridkamizi.events;
+package com.faridkamizi.events.input;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.PlayerShopCreationEvent;
 import com.faridkamizi.inventory.gui.ShopInventory;
-import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
 import org.bukkit.*;
@@ -73,8 +73,8 @@ public class ProcessInputEvent extends Event implements Listener {
             if(reqEvt.shopEvent == Input.ShopEvent.SHOP_CREATION || reqEvt.shopEvent == Input.ShopEvent.SHOP_RENAME) {
 
                 if (isValidTitle(evt.getInput())) {
-                    if (reqEvt.coEvent instanceof PrePlayerShopCreation) {
-                        Location shopLocationCreation = ((PrePlayerShopCreation) reqEvt.coEvent).getLocation();
+                    if (reqEvt.coEvent instanceof PlayerShopCreationEvent) {
+                        Location shopLocationCreation = ((PlayerShopCreationEvent) reqEvt.coEvent).getLocation();
                         UniversalShopStorage.create(player.getUniqueId(), shopLocationCreation.clone(), evt.getInput());
                     } else if (reqEvt.coEvent instanceof InventoryClickEvent) {
                         UniversalShopStorage.get(reqEvt.requestOwnerID).getShopConfig().updateName(evt.getInput());
