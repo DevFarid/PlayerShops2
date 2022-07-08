@@ -5,18 +5,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class PrePlayerShopCreation extends Event {
+public class PlayerShopCreationEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
     private final Location loc;
 
-    public PrePlayerShopCreation(Player p, Location sloc) {
+    public PlayerShopCreationEvent(Player p, Location sloc) {
         this.player = p;
         this.loc = sloc;
     }
 
-    public PrePlayerShopCreation() {
+    public PlayerShopCreationEvent() {
         this.player = null;
         this.loc = null;
     }

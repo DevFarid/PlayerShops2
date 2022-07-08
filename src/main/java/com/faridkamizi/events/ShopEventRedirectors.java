@@ -2,6 +2,9 @@ package com.faridkamizi.events;
 
 import com.faridkamizi.PlayerShops;
 import com.faridkamizi.currency.Currency;
+import com.faridkamizi.events.input.Input;
+import com.faridkamizi.events.input.RequestEvent;
+import com.faridkamizi.events.input.RequestInputEvent;
 import com.faridkamizi.inventory.guiListener.ShopListener;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
@@ -17,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.Serializable;
 
-public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
+public class ShopEventRedirectors implements Listener, Serializable, UniversalShopStorage {
 
     /**
      * Manage shop action handling such as creating a shop or retrieve the shop from where it was clicked.
@@ -32,34 +35,36 @@ public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
             if(player.getInventory().getItemInMainHand().equals(pJournal)) {
                 e.setCancelled(true);
 
-                PrePlayerShopCreation shopCreationEvent = new PrePlayerShopCreation(player, e.getClickedBlock().getLocation());
+                // Player is starting to create a shop.
+                PlayerShopCreationEvent shopCreationEvent = new PlayerShopCreationEvent(player, e.getClickedBlock().getLocation());
 
+                // Request Event
                 RequestEvent evt = new RequestEvent(player.getUniqueId(), shopCreationEvent, Input.InputType.StringType, Input.ShopEvent.SHOP_CREATION);
+
                 player.sendMessage(PlayerShops.colorize("&ePlease enter a &lSHOP NAME&r. [max 16 characters]"));
                 RequestInputEvent.request(player.getUniqueId(), evt);
 
 
             } else if(e.getClickedBlock().getType().equals(Material.CHEST)) {
+                // Player is trying to upgrade shop by shift + right-clicking it.
                 ShopObject shopObject = ShopObject.getShop(e.getClickedBlock().getLocation());
                 if(shopObject != null && shopObject.getShopOwnerID().equals(player.getUniqueId())) {
                     e.setCancelled(true);
-
                     if(shopObject.getShopConfig().getStatus()) {
                         player.sendMessage(PlayerShops.colorize("&cYou must close your shop to upgrade it."));
                     } else {
-                        PlayerShopUpgrade shopUpgradeEvent = new PlayerShopUpgrade(player, shopObject);
+                        PlayerShopUpgradeEvent shopUpgradeEvent = new PlayerShopUpgradeEvent(player, shopObject);
                         Bukkit.getServer().getPluginManager().callEvent(shopUpgradeEvent);
                     }
                 }
             }
         } else if(e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.CHEST) {
+            // Player is trying to open a PlayerShop.
             ShopObject shopObject = ShopObject.getShop(e.getClickedBlock().getLocation());
             if(shopObject != null) {
                 e.setCancelled(true);
-
                 PlayerShopViewEvent shopViewEvent = new PlayerShopViewEvent(player, shopObject);
                 Bukkit.getServer().getPluginManager().callEvent(shopViewEvent);
-
             }
         }
     }
@@ -82,7 +87,7 @@ public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
     }
 
     @EventHandler
-    public void shopUpgradeEvent(PlayerShopUpgrade evt) throws InstantiationException, IllegalAccessException {
+    public void shopUpgradeEvent(PlayerShopUpgradeEvent evt) throws InstantiationException, IllegalAccessException {
         int currentRows = evt.getRequestedShop().getShopConfig().getShopTier();
         int upgradeCost = 200 * currentRows;
         if(currentRows < 5) {

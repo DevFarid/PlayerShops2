@@ -1,4 +1,4 @@
-package com.faridkamizi.events;
+package com.faridkamizi.events.input;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
