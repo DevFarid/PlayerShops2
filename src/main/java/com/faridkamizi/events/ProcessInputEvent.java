@@ -6,10 +6,7 @@ import com.faridkamizi.inventory.gui.ShopInventory;
 import com.faridkamizi.inventory.holders.ShopInventoryHolder;
 import com.faridkamizi.system.ShopObject;
 import com.faridkamizi.system.UniversalShopStorage;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -92,11 +89,13 @@ public class ProcessInputEvent extends Event implements Listener {
             if(reqEvt.coEvent instanceof InventoryClickEvent) {
                 if (reqEvt.shopEvent == Input.ShopEvent.OWNER_ADD_ITEM) {
                     ItemStack aItem = (ItemStack) reqEvt.objects[0];
-                    int slot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();
-                    if (isValidPrice(evt.getInput())) {
-                        ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(aItem, Integer.parseInt(evt.getInput()), slot);
-                    } else {
-                        player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                    if(aItem.getType() != Material.AIR) {
+                        int slot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();
+                        if (isValidPrice(evt.getInput())) {
+                            ShopObject.shopLocationDirectory.get(player.getUniqueId()).getShopConfig().addItem(aItem, Integer.parseInt(evt.getInput()), slot);
+                        } else {
+                            player.sendMessage(PlayerShops.colorize("&c&c'" + evt.getInput() + "' is not a valid number.\n&cItem Pricing - &lCANCELLED"));
+                        }
                     }
                 } else if(reqEvt.shopEvent == Input.ShopEvent.PLAYER_BUY_EVENT) {
                     int clickedSlot = ((InventoryClickEvent) reqEvt.coEvent).getRawSlot();

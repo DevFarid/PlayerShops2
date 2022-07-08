@@ -61,21 +61,23 @@ public class ShopInventory implements ShopInventoryHolder {
         if(invEvt.getClick() == ClickType.LEFT) {
             if (invEvt.getClickedInventory() != null) {
                 if ((invEvt.getClickedInventory().getType() == InventoryType.CHEST) && invEvt.getCurrentItem() == null && invEvt.getCursor() != null) {
-                    if (isOwner) {
-                        if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
-                            player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
+                    if(invEvt.getCursor().getType() != Material.AIR) {
+                        if (isOwner) {
+                            if (!shopObject.getShopConfig().getOwnerConfig().getBoolean("player.shopOpen")) {
+                                player.sendMessage(PlayerShops.colorize("&aEnter the &lGEM&a value of [&l" + invEvt.getCursor().getAmount() + "x&a] of this item."));
 
-                            RequestEvent evt = new RequestEvent(this.owner, invEvt, Input.InputType.IntegerType, Input.ShopEvent.OWNER_ADD_ITEM);
-                            RequestInputEvent.request(this.owner, evt);
+                                RequestEvent evt = new RequestEvent(this.owner, invEvt, Input.InputType.IntegerType, Input.ShopEvent.OWNER_ADD_ITEM);
+                                RequestInputEvent.request(this.owner, evt);
 
-                            invEvt.getWhoClicked().setItemOnCursor(null);
-                            player.closeInventory();
+                                invEvt.getWhoClicked().setItemOnCursor(null);
+                                player.closeInventory();
+                            } else {
+                                invEvt.setCancelled(true);
+                                player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));
+                            }
                         } else {
                             invEvt.setCancelled(true);
-                            player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));
                         }
-                    } else {
-                        invEvt.setCancelled(true);
                     }
                 } else if (((invEvt.getClickedInventory().getType() == InventoryType.CHEST)) && invEvt.getCurrentItem() != null && invEvt.getCursor().getType().isAir()) {
                     invEvt.setCancelled(true);
@@ -163,7 +165,7 @@ public class ShopInventory implements ShopInventoryHolder {
                         RequestInputEvent.request(this.owner, evt);
                         player.closeInventory();
                     } else {
-                        player.sendMessage(PlayerShops.colorize("&cYou must close your shop to add an item."));
+                        player.sendMessage(PlayerShops.colorize("&cYou must close your shop to modify an item price."));
                     }
                 }
             }

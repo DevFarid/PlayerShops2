@@ -50,6 +50,8 @@ public class ShopEvent implements Listener, Serializable, UniversalShopStorage {
                         PlayerShopUpgrade shopUpgradeEvent = new PlayerShopUpgrade(player, shopObject);
                         Bukkit.getServer().getPluginManager().callEvent(shopUpgradeEvent);
                     }
+                } else if(!(shopObject.getShopOwnerID().equals(player.getUniqueId()))) {
+                    e.setCancelled(true);
                 }
             }
         } else if(e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.CHEST) {
